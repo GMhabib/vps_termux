@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .table-responsive { max-height: 60vh; }
+        .action-buttons form { display: inline-block; margin: 0 2px; }
+        .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.8rem; }
+        .path-display {
+            background-color: #e9ecef;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            word-break: break-all;
+        }
+        /* CSS untuk Terminal ditambahkan agar lebih rapi */
+        #terminal {
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            height: 400px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #terminal-input-container {
+            display: flex;
+            background-color: #212529;
+            padding: 5px 15px 10px;
+            border-radius: 5px;
+        }
+        #terminal-input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: #f8f9fa;
+            outline: none;
+        }
+        #terminal-prompt {
+            color: #28a745;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">Admin Panel</a>
+            <div class="d-flex text-white">
+                <span class="navbar-text me-3">
+                    Selamat Datang, <strong><%= user.username %></strong> (<%= user.role %>)
+                </span>
+                <a href="/logout" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-folder-open"></i> File Manager</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h5>Upload File Baru</h5>
+                            <form action="/upload" method="POST" enctype="multipart/form-data" class="d-flex">
+                                <input type="hidden" name="currentPath" value="<%= currentPath %>">
+                                <input class="form-control me-2" type="file" name="filedata" required>
+                                <button class="btn btn-primary" type="submit">Upload</button>
+                            </form>
+                        </div>
+                        
+                        <hr>
+
+                        <h5>File & Folder</h5>
+                        <div class="path-display">
+                            <i class="fas fa-location-dot"></i> Lokasi: <strong>/<%= currentPath.replace(/\\/g, '/') %></strong>
+                            <input type="hidden" form="batch-form" name="currentPath" value="<%= currentPath %>">
+                        </div>
+                        <div class="mb-2">
+                             <button type="button" id="compress-btn" class="btn btn-secondary btn-sm"><i class="fas fa-file-zipper"></i> Kompres Pilihan</button>
+                             <button type="button" id="delete-batch-btn" class="btn btn-danger btn-sm"><i class="fas fa-trash-can"></i> Hapus Pilihan</button>
+                        </div>
+
+                        <form id="batch-form" method="POST">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="select-all"></th>
+                                            <th>Nama</th>
+                                            <th>Ukuran</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% files.forEach(file => { %>
+                                            <tr class="text-nowrap">
+                                                <td>
+                                                    <% if (file.name !== '.. (Kembali)') { %>
+                                                        <input type="checkbox" name="items" class="file-checkbox" value="<%= file.path %>">
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if (file.isDirectory) { %>
+                                                        <i class="fas fa-folder text-warning"></i>
+                                                        <a href="/dashboard?path=<%= encodeURIComponent(file.path) %>" class="text-decoration-none"><%= file.name %></a>
+                                                    <% } else { %>
+                                                        <i class="fas fa-file text-secondary"></i> <%= file.name %>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= file.size %></td>
+                                                <td class="action-buttons">
+                                                    <% if (!file.isDirectory) { %>
+                                                        <a href="/download/<%= encodeURIComponent(file.path) %>" class="btn btn-success btn-sm" title="Download"><i class="fas fa-download"></i></a>
+                                                        <% if (user.role === 'admin') { %>
+                                                            <button type="button" class="btn btn-info btn-sm edit-btn" data-path="<%= file.path %>" title="Edit"><i class="fas fa-edit"></i></button>
+                                                        <% } %>
+                                                        <% if (/\.(zip|tar|tar\.gz|tgz)$/i.test(file.name)) { %>
+                                                            <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST">
+                                                                <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i></button>
+                                                            </form>
+                                                        <% } %>
+                                                    <% } %>
+                                                     <% if (file.name !== '.. (Kembali)' && user.role === 'admin') { %>
+                                                        <form action="/admin/delete/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus <%= file.name %>?');">
+                                                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                        </form>
+                                                     <% } %>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> User Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% users.forEach(u => { %>
+                                        <tr>
+                                            <td><%= u.username %></td>
+                                            <td><span class="badge bg-<%= u.role === 'admin' ? 'success' : 'secondary' %>"><%= u.role %></span></td>
+                                            <td>
+                                                <% if (user.role === 'admin') { %>
+                                                    <form action="/delete-user/<%= u._id %>" method="POST" onsubmit="return confirm('Yakin ingin menghapus user <%= u.username %>?');">
+                                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                            <%= user._id.toString() === u._id.toString() ? 'disabled' : '' %>>
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+        <% if (user.role === 'admin') { %>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-terminal"></i> Web Shell</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="terminal">
+                            <span>Selamat datang di Web Shell. Jalankan perintah di server.</span><br>
+                            <span>Contoh: ls -la, pwd, node -v</span>
+                        </div>
+                        <form id="terminal-form">
+                            <div id="terminal-input-container">
+                                <span id="terminal-prompt">$></span>
+                                <input type="text" id="terminal-input" autocomplete="off" autofocus>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div> 
+    
+    <div class="modal fade" id="editFileModal" tabindex="-1" aria-labelledby="editFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form id="edit-form" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editFileModalLabel">Edit File: <span id="filename-span"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea name="fileContent" id="fileContent" class="form-control" rows="20"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editModal = new bootstrap.Modal(document.getElementById('editFileModal'));
+            
+            // Logika untuk Tombol Edit
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const filePath = e.currentTarget.dataset.path;
+                    document.getElementById('filename-span').textContent = filePath.split(/[\\/]/).pop();
+                    
+                    const editForm = document.getElementById('edit-form');
+                    editForm.action = `/admin/edit/${encodeURIComponent(filePath)}`;
+                    
+                    try {
+                        const response = await fetch(`/admin/get-content/${encodeURIComponent(filePath)}`);
+                        
+                        // PERBAIKAN: Tangkap error status code dari server (403, 404, 500)
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            const status = response.status;
+                            
+                            // Jika server mengirimkan JSON error (seperti 403 atau 500)
+                            try {
+                                const errorJson = JSON.parse(errorText);
+                                throw new Error(`Status ${status}: ${errorJson.message || errorText}`);
+                            } catch {
+                                // Jika bukan JSON, anggap itu HTML/text error
+                                throw new Error(`Status ${status}: Gagal memuat file. ${errorText.substring(0, 50)}...`);
+                            }
+                        }
+                        
+                        const content = await response.text();
+                        document.getElementById('fileContent').value = content;
+                        editModal.show();
+                    } catch (error) {
+                        alert(error.message);
+                    }
+                });
+            });
+
+            // Logika untuk Checkbox "Select All"
+            const selectAllCheckbox = document.getElementById('select-all');
+            const fileCheckboxes = document.querySelectorAll('.file-checkbox');
+            selectAllCheckbox.addEventListener('change', (e) => {
+                fileCheckboxes.forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                });
+            });
+
+            // Logika untuk Tombol Aksi Batch
+            const batchForm = document.getElementById('batch-form');
+            const userRole = "<%= user.role %>";
+
+            // PERBAIKAN: Nonaktifkan tombol batch jika user bukan admin (kecuali extract)
+            if (userRole !== 'admin') {
+                 document.getElementById('compress-btn').disabled = true;
+                 document.getElementById('delete-batch-btn').disabled = true;
+            }
+
+            document.getElementById('compress-btn').addEventListener('click', () => {
+                if (document.querySelectorAll('.file-checkbox:checked').length > 0) {
+                    batchForm.action = '/admin/batch-archive';
+                    batchForm.submit();
+                } else {
+                    alert('Pilih setidaknya satu item untuk dikompres.');
+                }
+            });
+
+            document.getElementById('delete-batch-btn').addEventListener('click', () => {
+                 if (document.querySelectorAll('.file-checkbox:checked').length > 0) {
+                    if (confirm('Anda yakin ingin menghapus item yang dipilih?')) {
+                        batchForm.action = '/admin/batch-delete';
+                        batchForm.submit();
+                    }
+                 } else {
+                     alert('Pilih setidaknya satu item untuk dihapus.');
+                 }
+            });
+
+            // ===================================
+            // LOGIKA UNTUK WEB SHELL TERMINAL
+            // ===================================
+            const terminalOutput = document.getElementById('terminal');
+            const terminalForm = document.getElementById('terminal-form');
+            const terminalInput = document.getElementById('terminal-input');
+            const currentPathInput = document.querySelector('input[name="currentPath"]');
+
+            // Hanya aktifkan logika terminal jika user adalah admin
+            if (terminalForm) {
+                terminalForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const command = terminalInput.value.trim();
+                    if (command === '') return;
+
+                    const commandEcho = document.createElement('div');
+                    commandEcho.innerHTML = `<span style="color: #28a745;">$></span> ${command}`;
+                    terminalOutput.appendChild(commandEcho);
+                    
+                    terminalInput.value = '';
+
+                    try {
+                        const response = await fetch('/admin/execute-command', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                command: command,
+                                currentPath: currentPathInput.value
+                            })
+                        });
+
+                        // PERBAIKAN: Tangani respons JSON yang mungkin error (status 400, 500)
+                        if (!response.ok) {
+                            const data = await response.json(); // Server seharusnya merespons JSON error
+                            
+                            const errorElement = document.createElement('pre');
+                            errorElement.style.color = '#dc3545';
+                            errorElement.textContent = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
+                            terminalOutput.appendChild(errorElement);
+                        } else {
+                            const data = await response.json();
+                            
+                            const outputElement = document.createElement('pre');
+                            outputElement.style.margin = '0';
+                            outputElement.textContent = data.output;
+                            terminalOutput.appendChild(outputElement);
+                        }
+
+                    } catch (error) {
+                        const errorElement = document.createElement('pre');
+                        errorElement.style.color = '#dc3545';
+                        errorElement.textContent = `Client/Network Error: ${error.message}`;
+                        terminalOutput.appendChild(errorElement);
+                    }
+                    
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

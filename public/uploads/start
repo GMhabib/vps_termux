@@ -1,0 +1,2 @@
+#!/bin/bash
+pm2 start "php -S localhost:1991 -t htdocs/" --name "PHPServer" && pm2 start "autossh -M 0 -R file:80:localhost:1991 serveo.net" --name "PHPSSH"

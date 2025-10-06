@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "cara pakai agar bisa berjalan di website kalian"
+echo ""
+echo "jika di PHP nama file memulai di luar jika node JS pakai di dalam"
+echo ""
+echo "nanti perintahnya akan berjalan."
+echo "terima kasih"
