@@ -18,6 +18,32 @@
             margin-bottom: 1rem;
             word-break: break-all;
         }
+
+        /* --- CSS BARU UNTUK ANIMASI --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .container, .card {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .table-hover tbody tr {
+            transition: all 0.2s ease-in-out;
+        }
+        .table-hover tbody tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            cursor: pointer;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        /* --- AKHIR CSS BARU --- */
+
+        /* CSS untuk Terminal */
         #terminal {
             background-color: #212529;
             color: #f8f9fa;
@@ -46,6 +72,43 @@
             color: #28a745;
             margin-right: 10px;
         }
+
+        /* --- CSS BARU UNTUK KURSOR TERMINAL --- */
+        #terminal-prompt .cursor {
+            display: inline-block;
+            background-color: #f8f9fa;
+            width: 10px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            from, to { background-color: transparent; }
+            50% { background-color: #f8f9fa; }
+        }
+        /* --- AKHIR CSS BARU --- */
+
+        /* --- CSS BARU UNTUK NOTIFIKASI --- */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s ease-in-out;
+        }
+        #notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #notification.success { background-color: #198754; }
+        #notification.error { background-color: #dc3545; }
+        #notification.warning { background-color: #ffc107; color: #000; }
+        /* --- AKHIR CSS BARU --- */
     </style>
 </head>
 <body>
@@ -84,7 +147,7 @@
                         <div class="path-display">
                             <i class="fas fa-location-dot"></i> Lokasi: <strong>/<%= currentPath.replace(/\\/g, '/') %></strong>
                         </div>
-                  <i class="fas fa-terminal"></i> <strong>Cara Jalankan Start</strong><br>          <i>bash nama_file.sh</i> <br>     <i>node nama_file.js</i>          
+                        <p class="form-text"><i class="fas fa-info-circle"></i> <strong>Cara Menjalankan File:</strong> `bash nama_file.sh` atau `node nama_file.js`</p>       
                         <div class="table-responsive">
                             <table class="table table-hover table-sm">
                                 <thead>
@@ -110,7 +173,6 @@
                                                 <% if (!file.isDirectory) { %>
                                                     <a href="/download/<%= encodeURIComponent(file.path) %>" class="btn btn-success btn-sm" title="Download"><i class="fas fa-download"></i> Download</a>
                                                     
-                                                    <!-- <button type="button" class="btn btn-info btn-sm edit-btn" data-path="<%= //file.path %>" title="Edit"><i class="fas fa-edit"></i> Edit</button> -->
                                                     <% if (/\.(zip|tar|tar\.gz|tgz)$/i.test(file.name)) { %>
                                                         <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Yakin ingin mengekstrak <%= file.name %>?');">
                                                             <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i> Ekstrak</button>
@@ -127,20 +189,20 @@
                 </div>
             </div>
         </div>
-    <div class="row mt-4 justify-content-center">
+        <div class="row mt-4 justify-content-center">
             <div class="col-lg-10">
                 <div class="card">
                     <div class="card-header">
-                        <h3><i class="fas fa-terminal"></i> Web Shell (Hanya Bekerja di Direktori Upload)</h3>
+                        <h3><i class="fas fa-terminal"></i> Web Shell</h3>
                     </div>
                     <div class="card-body p-0">
                         <div id="terminal">
-                            <span>Selamat datang di Web Shell. Perintah berbahaya diblokir secara client-side.</span><br>
-                            <span>Lokasi kerja: **/<%= currentPath.replace(/\\/g, '/') %>**</span>
+                            <span>Selamat datang di Web Shell. Perintah berbahaya diblokir.</span><br>
+                            <span>Lokasi kerja: <strong><%= currentPath.replace(/\\/g, '/') %></strong></span>
                         </div>
                         <form id="terminal-form">
                             <div id="terminal-input-container">
-                                <span id="terminal-prompt">$></span>
+                                <span id="terminal-prompt">$> <!-- <span class="cursor">&nbsp;</span>--></span>
                                 <input type="text" id="terminal-input" autocomplete="off" autofocus>
                                 <input type="hidden" id="shell-current-path" value="<%= currentPath %>">
                             </div>
@@ -171,14 +233,27 @@
             </div>
         </div>
     </div>
+
+    <div id="notification"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            // --- FUNGSI BARU UNTUK NOTIFIKASI ---
+            const notification = document.getElementById('notification');
+            function showNotification(message, type = 'success') {
+                notification.textContent = message;
+                notification.className = ''; // Reset classes
+                notification.classList.add('show', type);
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000); // Sembunyikan setelah 3 detik
+            }
+
             const editModal = new bootstrap.Modal(document.getElementById('editFileModal'));
             
-            // ===================================
-            // 1. LOGIKA TOMBOL EDIT
-            // ===================================
+            // Logika tombol Edit (meskipun di-disable di HTML, JS-nya kita perbarui)
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', async (e) => {
                     const filePath = e.currentTarget.dataset.path;
@@ -189,136 +264,129 @@
                     
                     try {
                         const response = await fetch(`/user/get-content/${encodeURIComponent(filePath)}`);
-                        
                         if (!response.ok) {
                             const errorText = await response.text();
-                            let errorMessage = `Gagal memuat file: Status ${response.status}`;
-                            
-                            try {
-                                const errorJson = JSON.parse(errorText);
-                                errorMessage = errorJson.message || errorMessage;
-                            } catch {
-                                errorMessage += `: ${errorText.substring(0, 50)}...`;
-                            }
-                            throw new Error(errorMessage);
+                            throw new Error(`Gagal memuat file: ${errorText}`);
                         }
-                        
                         const content = await response.text();
                         document.getElementById('fileContent').value = content;
                         editModal.show();
                     } catch (error) {
-                        alert(`Error saat memuat konten: ${error.message}`);
+                         // GANTI alert() dengan notifikasi baru
+                        showNotification(error.message, 'error');
                     }
                 });
             });
             
-// ===================================
-// 2. LOGIKA WEB SHELL TERMINAL YANG DIPERBAIKI
-// ===================================
-// Catatan: Pastikan kode ini berada di dalam document.addEventListener('DOMContentLoaded', ...)
+            // =======================================================
+            // PEMBARUAN UTAMA: LOGIKA WEB SHELL DENGAN EFEK MENGETIK
+            // =======================================================
+            const terminalOutput = document.getElementById('terminal');
+            const terminalForm = document.getElementById('terminal-form');
+            const terminalInput = document.getElementById('terminal-input');
+            const shellCurrentPathInput = document.getElementById('shell-current-path');
 
-const terminalOutput = document.getElementById('terminal');
-const terminalForm = document.getElementById('terminal-form');
-const terminalInput = document.getElementById('terminal-input');
-const shellCurrentPathInput = document.getElementById('shell-current-path');
+            // Fungsi baru untuk efek mengetik
+            function typewriterEffect(element, text, callback) {
+                let i = 0;
+                const speed = 10; // Kecepatan ketik dalam milidetik
 
-// FUNGSI KEAMANAN: Memblokir perintah berbahaya
-function isCommandDangerous(command) {
-    const lowerCommand = command.toLowerCase().trim();
-    
-    // 1. Blokir perintah hapus atau modifikasi sistem
-    if (/\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+.*\/|rm|cp|cp\s+-r|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i.test(lowerCommand)) {
-        return 'Perintah penghapusan/modifikasi sistem yang berbahaya diblokir.';
-    }
-
-    // 2. Blokir akses ke direktori root atau sistem umum
-    if (/\b(pwd|cat|tail|grep|find)\s+(\/|~\/|\/etc\/|\/var\/|\/sdcard\/)/i.test(lowerCommand)) {
-        return 'Akses atau perintah ke direktori root atau sistem (/sdcard, /etc, /) diblokir untuk keamanan.';
-    }
-    
-    // 3. Blokir modifikasi user/grup
-    if (/\b(usermod|useradd|passwd|groupadd)\b/i.test(lowerCommand)) {
-        return 'Perintah modifikasi user diblokir.';
-    }
-
-    return false;
-}
-
-if (terminalForm) {
-    terminalForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const command = terminalInput.value.trim();
-        if (command === '') return;
-
-        const commandEcho = document.createElement('div');
-        commandEcho.innerHTML = `<span style="color: #28a745;">$></span> ${command}`;
-        terminalOutput.appendChild(commandEcho);
-        
-        terminalInput.value = '';
-
-        const securityError = isCommandDangerous(command);
-        if (securityError) {
-            const errorElement = document.createElement('pre');
-            errorElement.style.color = '#ffc107'; // Warna kuning/warning
-            errorElement.textContent = `[BLOCKED]: ${securityError}`;
-            terminalOutput.appendChild(errorElement);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-            return;
-        }
-
-        try {
-            // Menggunakan route /admin/execute-command (DILINDUNGI di server!)
-            const response = await fetch('/admin/execute-command', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    command: command,
-                    currentPath: shellCurrentPathInput.value
-                })
-            });
-
-            if (!response.ok) {
-                let data = {};
-                let errorText = await response.text(); // Ambil respons sebagai Teks dulu
-
-                // 1. Coba parse sebagai JSON (untuk respons error yang benar dari server)
-                try {
-                    data = JSON.parse(errorText);
-                } catch (e) {
-                    // 2. Jika parse GAGAL, respons adalah Plain Text (misalnya: "Akses ditolak...")
-                    data.message = errorText.trim(); 
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
+                        setTimeout(type, speed);
+                    } else if (callback) {
+                        callback(); // Panggil callback jika sudah selesai
+                    }
                 }
-                
-                const errorElement = document.createElement('pre');
-                errorElement.style.color = '#dc3545';
-                // Tampilkan pesan error yang tangguh
-                errorElement.textContent = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
-                terminalOutput.appendChild(errorElement);
-
-            } else {
-                // LOGIKA SUKSES
-                const data = await response.json();
-                
-                const outputElement = document.createElement('pre');
-                outputElement.style.margin = '0';
-                outputElement.textContent = data.output;
-                terminalOutput.appendChild(outputElement);
+                type();
             }
 
-        } catch (error) {
-            // Menangani error jaringan atau kegagalan fetch
-            const errorElement = document.createElement('pre');
-            errorElement.style.color = '#dc3545';
-            errorElement.textContent = `Client/Network Error: ${error.message}`;
-            terminalOutput.appendChild(errorElement);
-        }
-        
-        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-    });
-}
+            function isCommandDangerous(command) {
+                const lowerCommand = command.toLowerCase().trim();
+                if (/\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+.*\/|rm|cp|mv|pkill|kill\s+-9|shutdown|reboot|format|dd|sudo|su)\b/i.test(lowerCommand)) {
+                    return 'Perintah yang berpotensi merusak sistem diblokir.';
+                }
+                if (/\b(cat|tail|grep|find|ls)\s+(\/|~\/|\/etc|\/var|\/root|\.\.)/i.test(lowerCommand)) {
+                    return 'Akses ke direktori di luar folder Anda diblokir.';
+                }
+                if (/\b(usermod|useradd|passwd|groupadd)\b/i.test(lowerCommand)) {
+                    return 'Perintah modifikasi user diblokir.';
+                }
+                return false;
+            }
 
-            
-            // Catatan: Tidak ada lagi penutup } atau }); yang berlebihan di sini!
+            if (terminalForm) {
+                terminalForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const command = terminalInput.value.trim();
+                    if (command === '') return;
+
+                    // Nonaktifkan input selama perintah dieksekusi
+                    terminalInput.disabled = true;
+
+                    const commandEcho = document.createElement('div');
+                    commandEcho.innerHTML = `<span style="color: #28a745;">$></span> ${command}`;
+                    terminalOutput.appendChild(commandEcho);
+                    
+                    terminalInput.value = '';
+
+                    const securityError = isCommandDangerous(command);
+                    if (securityError) {
+                        const errorElement = document.createElement('pre');
+                        errorElement.style.color = '#ffc107'; // Warna kuning/warning
+                        terminalOutput.appendChild(errorElement);
+                        // Tampilkan pesan blokir dengan efek ketik
+                        typewriterEffect(errorElement, `[BLOCKED]: ${securityError}`, () => {
+                            terminalInput.disabled = false; // Aktifkan lagi input
+                            terminalInput.focus();
+                        });
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/admin/execute-command', { 
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                command: command,
+                                currentPath: shellCurrentPathInput.value
+                            })
+                        });
+
+                        const data = await response.json();
+                        const outputElement = document.createElement('pre');
+                        outputElement.style.margin = '0';
+                        
+                        if (!response.ok) {
+                            outputElement.style.color = '#dc3545'; // Warna merah untuk error
+                            const errorMessage = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
+                            typewriterEffect(outputElement, errorMessage, () => {
+                                terminalInput.disabled = false;
+                                terminalInput.focus();
+                            });
+                        } else {
+                            typewriterEffect(outputElement, data.output, () => {
+                                terminalInput.disabled = false;
+                                terminalInput.focus();
+                            });
+                        }
+                        terminalOutput.appendChild(outputElement);
+
+                    } catch (error) {
+                        const errorElement = document.createElement('pre');
+                        errorElement.style.color = '#dc3545';
+                        const clientError = `Client/Network Error: ${error.message}`;
+                        typewriterEffect(errorElement, clientError, () => {
+                           terminalInput.disabled = false;
+                           terminalInput.focus();
+                        });
+                        terminalOutput.appendChild(errorElement);
+                    }
+                });
+            }
         });
     </script>
 </body>
