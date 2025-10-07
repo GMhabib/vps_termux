@@ -306,7 +306,7 @@
 
             function isCommandDangerous(command) {
                 const lowerCommand = command.toLowerCase().trim();
-                if (/\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+.*\/|rm|cp|mv|pkill|kill\s+-9|shutdown|reboot|format|dd|sudo|su)\b/i.test(lowerCommand)) {
+                if (/\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+.*\/|rm|cp|mv|pkill|kill\s+-9|shutdown|reboot|format|dd|sudo|su)\b/i.test(lowerCommand)) {
                     return 'Perintah yang berpotensi merusak sistem diblokir.';
                 }
                 if (/\b(cat|tail|grep|find|ls)\s+(\/|~\/|\/etc|\/var|\/root|\.\.)/i.test(lowerCommand)) {
