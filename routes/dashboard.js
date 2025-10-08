@@ -519,6 +519,25 @@ router.post('/delete-user/:id', isAuthenticated, isAdmin, async (req, res) => {
         res.redirect('/dashboard');
     }
 });
+router.post('/admin/delete-all-users', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const currentUserId = req.session.userId;
+        
+        // Hapus semua user KECUALI user yang sedang login
+        const result = await User.deleteMany({ _id: { $ne: currentUserId } });
+        
+        console.log(`ADMIN ACTION: Berhasil menghapus ${result.deletedCount} user.`);
+        
+        // Kirim respons JSON untuk AJAX
+        res.status(200).json({ 
+            message: `Berhasil menghapus ${result.deletedCount} user (tidak termasuk Anda).`,
+            deletedCount: result.deletedCount
+        });
 
+    } catch (err) {
+        console.error("Gagal menghapus semua user:", err);
+        res.status(500).json({ message: 'Gagal menghapus semua user di server.' });
+    }
+});
 
 module.exports = router;
