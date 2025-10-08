@@ -19,7 +19,7 @@
             word-break: break-all;
         }
 
-        /* --- CSS BARU UNTUK ANIMASI --- */
+        /* --- CSS BARU UNTUK ANIMASI KONTEN --- */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -41,7 +41,7 @@
         .btn:hover {
             transform: scale(1.05);
         }
-        /* --- AKHIR CSS BARU --- */
+        /* --- AKHIR CSS BARU KONTEN --- */
 
         /* CSS untuk Terminal ditambahkan agar lebih rapi */
         #terminal {
@@ -83,7 +83,7 @@
             from, to { background-color: transparent; }
             50% { background-color: #f8f9fa; }
         }
-        /* --- AKHIR CSS BARU --- */
+        /* --- AKHIR CSS BARU KURSOR TERMINAL --- */
 
         /* --- CSS BARU UNTUK NOTIFIKASI --- */
         #notification {
@@ -106,17 +106,21 @@
         }
         #notification.success { background-color: #198754; }
         #notification.error { background-color: #dc3545; }
-        /* --- AKHIR CSS BARU --- */
+        #notification.info { background-color: #0d6efd; }
+        /* --- AKHIR CSS BARU NOTIFIKASI --- */
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/dashboard">Admin Panel</a>
-            <div class="d-flex text-white">
+            <div class="d-flex text-white overflow-scroll text-nowrap">
                 <span class="navbar-text me-3">
                     Selamat Datang, <strong><%= user.username %></strong> (<%= user.role %>)
                 </span>
+                <button type="button" class="btn btn-outline-info me-3" data-bs-toggle="modal" data-bs-target="#userManagementModal">
+                    <i class="fas fa-users"></i> User Management
+                </button>
                 <a href="/logout" class="btn btn-outline-danger">Logout</a>
             </div>
         </div>
@@ -124,7 +128,7 @@
 
     <div class="container mt-4">
         <div class="row">
-            <div class="col-lg-8">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3><i class="fas fa-folder-open"></i> File Manager</h3>
@@ -186,13 +190,13 @@
                                                             <button type="button" class="btn btn-info btn-sm edit-btn" data-path="<%= file.path %>" title="Edit"><i class="fas fa-edit"></i></button>
                                                         <% } %>
                                                         <% if (/\.(zip|tar|tar\.gz|tgz)$/i.test(file.name)) { %>
-                                                            <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST">
+                                                            <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" class="extract-form">
                                                                 <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i></button>
                                                             </form>
                                                         <% } %>
                                                     <% } %>
                                                      <% if (file.name !== '.. (Kembali)' && user.role === 'admin') { %>
-                                                        <form action="/admin/delete/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus <%= file.name %>?');">
+                                                        <form action="/admin/delete/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus <%= file.name %>?');" class="delete-file-form">
                                                             <button type="submit" class="btn btn-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
                                                         </form>
                                                      <% } %>
@@ -206,52 +210,8 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-users"></i> User Management</h3>
-                    </div>
-                    <div class="card-body">
-   <div class="mb-3">
-                            <button type="button" id="delete-all-users-btn" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-user-slash"></i> Hapus Semua User
-                            </button>
-                            <p class="small text-muted mt-2">Ini akan menghapus semua user **kecuali** Anda sendiri.</p>
-                        </div>                     
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Role</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% users.forEach(u => { %>
-                                        <tr>
-                                            <td><%= u.username %></td>
-                                            <td><span class="badge bg-<%= u.role === 'admin' ? 'success' : 'secondary' %>"><%= u.role %></span></td>
-                                            <td>
-                                                <% if (user.role === 'admin') { %>
-                                                    <form action="/delete-user/<%= u._id %>" method="POST" onsubmit="return confirm('Yakin ingin menghapus user <%= u.username %>?');">
-                                                        <button type="submit" class="btn btn-danger btn-sm" 
-                                                            <%= user._id.toString() === u._id.toString() ? 'disabled' : '' %>>
-                                                            Hapus
-                                                        </button>
-                                                    </form>
-                                                <% } %>
-                                            </td>
-                                        </tr>
-                                    <% }); %>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div> 
+        
         <% if (user.role === 'admin') { %>
         <div class="row mt-4">
             <div class="col-12">
@@ -266,7 +226,7 @@
                         </div>
                         <form id="terminal-form">
                             <div id="terminal-input-container">
-                                <span id="terminal-prompt">$> <!--<span class="cursor">&nbsp;</span> --></span>
+                                <span id="terminal-prompt">$> </span>
                                 <input type="text" id="terminal-input" autocomplete="off" autofocus>
                             </div>
                         </form>
@@ -293,6 +253,57 @@
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="userManagementModal" tabindex="-1" aria-labelledby="userManagementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="userManagementModalLabel"><i class="fas fa-users"></i> Manajemen Pengguna</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <button type="button" id="delete-all-users-btn-modal" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-user-slash"></i> Hapus Semua User
+                        </button>
+                        <p class="small text-muted mt-2">Tindakan ini akan menghapus semua user **kecuali** Anda sendiri.</p>
+                    </div>                     
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(u => { %>
+                                    <tr>
+                                        <td><%= u.username %></td>
+                                        <td><span class="badge bg-<%= u.role === 'admin' ? 'success' : 'secondary' %>"><%= u.role %></span></td>
+                                        <td>
+                                            <% if (user.role === 'admin') { %>
+                                                <form action="/delete-user/<%= u._id %>" method="POST" class="delete-user-form-modal" data-username="<%= u.username %>">
+                                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                                        <%= user._id.toString() === u._id.toString() ? 'disabled' : '' %>>
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
             </div>
         </div>
     </div>
@@ -340,12 +351,12 @@
                         document.getElementById('fileContent').value = content;
                         editModal.show();
                     } catch (error) {
-                        // GANTI alert() dengan notifikasi baru
                         showNotification(error.message, 'error');
                     }
                 });
             });
 
+            // LOGIKA FILE MANAGER (batch select, compress, delete)
             const selectAllCheckbox = document.getElementById('select-all');
             const fileCheckboxes = document.querySelectorAll('.file-checkbox');
             selectAllCheckbox.addEventListener('change', (e) => {
@@ -367,7 +378,6 @@
                     batchForm.action = '/admin/batch-archive';
                     batchForm.submit();
                 } else {
-                    // GANTI alert() dengan notifikasi baru
                     showNotification('Pilih setidaknya satu item untuk dikompres.', 'error');
                 }
             });
@@ -379,32 +389,31 @@
                         batchForm.submit();
                     }
                  } else {
-                     // GANTI alert() dengan notifikasi baru
                      showNotification('Pilih setidaknya satu item untuk dihapus.', 'error');
                  }
             });
+            // Akhir Logika File Manager
 
             // =======================================================
-            // PEMBARUAN UTAMA: LOGIKA WEB SHELL DENGAN EFEK MENGETIK
+            // LOGIKA WEB SHELL
             // =======================================================
             const terminalOutput = document.getElementById('terminal');
             const terminalForm = document.getElementById('terminal-form');
             const terminalInput = document.getElementById('terminal-input');
             const currentPathInput = document.querySelector('input[name="currentPath"]');
 
-            // Fungsi baru untuk efek mengetik
             function typewriterEffect(element, text, callback) {
                 let i = 0;
-                const speed = 10; // Kecepatan ketik dalam milidetik
+                const speed = 10; 
 
                 function type() {
                     if (i < text.length) {
                         element.textContent += text.charAt(i);
                         i++;
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight; // Auto-scroll
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight; 
                         setTimeout(type, speed);
                     } else if (callback) {
-                        callback(); // Panggil callback jika sudah selesai
+                        callback();
                     }
                 }
                 type();
@@ -416,7 +425,6 @@
                     const command = terminalInput.value.trim();
                     if (command === '') return;
                     
-                    // Nonaktifkan input selama perintah dieksekusi
                     terminalInput.disabled = true; 
 
                     const commandEcho = document.createElement('div');
@@ -440,17 +448,15 @@
                         outputElement.style.margin = '0';
                         
                         if (!response.ok) {
-                            outputElement.style.color = '#dc3545'; // Warna merah untuk error
+                            outputElement.style.color = '#dc3545';
                             const errorMessage = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
-                            // Ketik pesan error
                             typewriterEffect(outputElement, errorMessage, () => {
-                                terminalInput.disabled = false; // Aktifkan lagi input
+                                terminalInput.disabled = false;
                                 terminalInput.focus();
                             });
                         } else {
-                            // Ketik output yang berhasil
                             typewriterEffect(outputElement, data.output, () => {
-                                terminalInput.disabled = false; // Aktifkan lagi input
+                                terminalInput.disabled = false;
                                 terminalInput.focus();
                             });
                         }
@@ -460,9 +466,8 @@
                         const errorElement = document.createElement('pre');
                         errorElement.style.color = '#dc3545';
                         const clientError = `Client/Network Error: ${error.message}`;
-                        // Ketik pesan error
                         typewriterEffect(errorElement, clientError, () => {
-                           terminalInput.disabled = false; // Aktifkan lagi input
+                           terminalInput.disabled = false;
                            terminalInput.focus();
                         });
                         terminalOutput.appendChild(errorElement);
@@ -471,58 +476,79 @@
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 });
             }
-            // --- LOGIKA MANAJEMEN USER ---
+            // Akhir Logika Web Shell
 
-document.getElementById('delete-all-users-btn').addEventListener('click', async () => {
-    // KONFIRMASI KETAT DENGAN INPUT TEKS
-    const confirmation = prompt("PERINGATAN! Anda akan menghapus SEMUA user (kecuali Anda sendiri).\n\nKetik 'HAPUS SEMUA' untuk melanjutkan:");
+            // =======================================================
+            // LOGIKA MANAJEMEN USER (DI MODAL)
+            // =======================================================
 
-    if (confirmation !== 'HAPUS SEMUA') {
-        if (confirmation !== null) {
-            showNotification('Penghapusan dibatalkan. Konfirmasi tidak cocok.', 'info');
-        }
-        return;
-    }
+            // 1. Logika Hapus Semua User (Telah dipindahkan ke modal)
+            document.getElementById('delete-all-users-btn-modal').addEventListener('click', async () => {
+                const confirmation = prompt("PERINGATAN! Anda akan menghapus SEMUA user (kecuali Anda sendiri).\n\nKetik 'HAPUS SEMUA' untuk melanjutkan:");
 
-    try {
-        const response = await fetch('/admin/delete-all-users', {
-            method: 'POST',
-            headers: { 'Accept': 'application/json' }
-        });
+                if (confirmation !== 'HAPUS SEMUA') {
+                    if (confirmation !== null) {
+                        showNotification('Penghapusan dibatalkan. Konfirmasi tidak cocok.', 'info');
+                    }
+                    return;
+                }
 
-        const result = await response.json();
+                try {
+                    const response = await fetch('/admin/delete-all-users', {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json' }
+                    });
 
-        if (!response.ok) {
-            throw new Error(result.message || 'Gagal menghapus semua user.');
-        }
+                    const result = await response.json();
 
-        // Tampilkan notifikasi sukses dan refresh halaman
-        showNotification(result.message, 'success');
-        
-        // Tunda refresh agar notifikasi sempat terlihat
-        setTimeout(() => {
-            window.location.reload(); 
-        }, 1500); 
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Gagal menghapus semua user.');
+                    }
 
-    } catch (error) {
-        showNotification(`Error: ${error.message}`, 'error');
-    }
-});
+                    showNotification(result.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.reload(); 
+                    }, 1500); 
 
-// Pastikan semua form delete user individu juga memiliki konfirmasi:
-document.querySelectorAll('.delete-user-form').forEach(form => {
-    form.addEventListener('submit', function(e) { 
-        const userName = this.closest('tr').querySelector('td:first-child').textContent.trim();
-        // Cek jika tombol disable (artinya user sendiri)
-        if (this.querySelector('button[disabled]')) {
-            e.preventDefault();
-            return;
-        }
-        if (!confirm(`Yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan.`)) {
-            e.preventDefault(); 
-        }
-    });
-});
+                } catch (error) {
+                    showNotification(`Error: ${error.message}`, 'error');
+                }
+            });
+
+            // 2. Logika Hapus User Individu (Telah disesuaikan untuk modal)
+            document.querySelectorAll('.delete-user-form-modal').forEach(form => {
+                form.addEventListener('submit', function(e) { 
+                    const userName = this.dataset.username; 
+                    // Cek jika tombol disable (artinya user sendiri)
+                    if (this.querySelector('button[disabled]')) {
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!confirm(`Yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan.`)) {
+                        e.preventDefault(); 
+                    }
+                });
+            });
+
+            // 3. Logika untuk form lain yang perlu konfirmasi (Ekstrak)
+            document.querySelectorAll('.extract-form').forEach(form => {
+                 form.addEventListener('submit', function(e) { 
+                    if (!confirm('Anda yakin ingin mengekstrak file ini?')) {
+                        e.preventDefault();
+                    }
+                 });
+            });
+            
+            // 4. Logika untuk form lain yang perlu konfirmasi (Hapus File)
+            document.querySelectorAll('.delete-file-form').forEach(form => {
+                 form.addEventListener('submit', function(e) { 
+                    const fileName = this.closest('tr').querySelector('a, span').textContent.trim();
+                    if (!confirm(`Anda yakin ingin menghapus "${fileName}"?`)) {
+                        e.preventDefault(); 
+                    }
+                 });
+            });
 
         });
     </script>
