@@ -3,9 +3,8 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
-// Modul ini hanya akan digunakan dalam mode lokal
-const { exec } = require('child_process'); 
-//const open = require('open'); 
+const { exec } = require('child_process');
+//const open = require('open'); // MODUL BARU: Untuk membuka browser secara otomatis
 
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
@@ -13,26 +12,16 @@ const dashboardRoutes = require('./routes/dashboard');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Tentukan apakah kita berada di Vercel (Production) atau Lokal (Development/Termux)
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const MONGO_URI = 'mongodb://127.0.0.1:27017/auth_project';
 
-// MONGO_URI akan diambil dari Environment Variable di Vercel, 
-// atau menggunakan URI lokal untuk Development/Termux.
-const LOCAL_MONGO_URI = 'mongodb://127.0.0.1:27017/auth_project';
-const MONGO_URI = IS_PRODUCTION ? process.env.MONGO_URI : LOCAL_MONGO_URI;
+let mongodProcess = null; // Tambahkan variabel untuk menyimpan proses mongod
 
-let mongodProcess = null;
-
-// --- FUNGSI HANYA UNTUK LOKAL/TERMUX: MENJALANKAN MONGOD ---
+// --- FUNGSI UTAMA: MENJALANKAN MONGOD ---
 function startMongoDBServer() {
-    if (IS_PRODUCTION) {
-        // Lewati jika di Vercel
-        return;
-    }
-    
-    // Logika mongod HANYA berjalan jika di lokal/Termux
+    // Jalankan mongod dan simpan prosesnya
     mongodProcess = exec('mongod --fork --logpath /dev/null', (error, stdout, stderr) => {
         if (error) {
+            // Error code 48 biasanya berarti database sudah berjalan
             if (!stderr.includes('already in use') && !error.message.includes('code 48')) {
                 console.error(`Gagal menjalankan mongod: ${stderr}`);
             }
@@ -41,20 +30,16 @@ function startMongoDBServer() {
     
     setTimeout(() => {
         mongoose.connect(MONGO_URI)
-            .then(() => console.log('✅ Berhasil terhubung ke MongoDB LOKAL'))
-            .catch(err => console.error('❌ Koneksi MongoDB lokal gagal:', err.message));
+            .then(() => console.log('✅ Berhasil terhubung ke MongoDB'))
+            .catch(err => console.error('❌ Koneksi MongoDB gagal:', err.message));
     }, 2000);
 }
 
-// --- FUNGSI HANYA UNTUK LOKAL/TERMUX: MENGHENTIKAN MONGOD ---
+// --- FUNGSI BARU: MENGHENTIKAN MONGOD SECARA PAKSA ---
 function stopMongodAndExit() {
-    if (IS_PRODUCTION) {
-        // Lewati jika di Vercel
-        process.exit(0);
-    }
-    
     console.log('\n🛑 Menerima sinyal Ctrl+C. Menjalankan cleanup...');
     
+    // Perintah untuk menghentikan semua proses mongod secara paksa
     const killCommand = 'pkill mongod';
     
     exec(killCommand, (error, stdout, stderr) => {
@@ -64,17 +49,13 @@ function stopMongodAndExit() {
             console.log('✅ Semua proses mongod telah dihentikan.');
         }
         
+        // Hentikan server Node.js
         process.exit(0); 
     });
 }
 
-// --- FUNGSI HANYA UNTUK LOKAL/TERMUX: MENYIAPKAN AUTOSSH TUNNEL ---
+// --- FUNGSI BARU: MENYIAPKAN AUTOSSH TUNNEL ---
 function startAutoSshTunnel() {
-    if (IS_PRODUCTION) {
-        // Lewati jika di Vercel
-        return;
-    }
-    
     const tunnelCommand = 'autossh -M 0 -R habib:80:localhost:3000 serveo.net';
     console.log(`\n tunneling ke serveo.net dengan: ${tunnelCommand}`);
 
@@ -83,29 +64,36 @@ function startAutoSshTunnel() {
     tunnelProcess.stdout.on('data', (data) => {
         const output = data.toString();
         
+        // Deteksi URL dari output Serveo (misalnya: "Forwarding to...")
         const urlMatch = output.match(/(https?:\/\/[a-zA-Z0-9-]+\.serveo\.net)/);
         
         if (urlMatch) {
             const tunnelUrl = urlMatch[1];
             console.log(`\n🎉 Tunnel Berhasil! Akses di: ${tunnelUrl}`);
             
-            const openCommand = `xdg-open ${tunnelUrl} || termux-open-url ${tunnelUrl}`;
+            // Otomatis membuka URL di browser
+             const openCommand = `xdg-open ${tunnelUrl} || termux-open-url ${tunnelUrl}`;
             
             exec(openCommand, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`\n[Browser Gagal Dibuka] Coba buka URL ini secara manual: ${tunnelUrl}`);
+                    // Biasanya gagal karena environment tidak memiliki xdg-open/termux-open
                 } else {
                     console.log('✅ URL otomatis dibuka di browser.');
                 }
             });           
+           // open(tunnelUrl).catch(err => console.error('Gagal membuka browser:', err));
             
+            // Penting: Hapus listener setelah URL ditemukan untuk mencegah logging berlebihan
             tunnelProcess.stdout.removeAllListeners('data'); 
         } else {
+             // Tampilkan output Serveo lainnya
              console.log(output.trim());
         }
     });
 
     tunnelProcess.stderr.on('data', (data) => {
+        // Serveo sering mengirimkan pesan status ke stderr
         console.error(`[Tunnel Status] ${data.toString().trim()}`);
     });
 
@@ -115,36 +103,14 @@ function startAutoSshTunnel() {
         }
     });
     
+    // Pastikan tunnel juga dihentikan saat Ctrl+C
     process.on('SIGINT', () => tunnelProcess.kill());
 }
 
-// --- FUNGSI KHUSUS VERCEL: KONEKSI KE ATLAS ---
-function connectToAtlas() {
-    if (!IS_PRODUCTION) {
-        // Lewati jika di lokal/Termux
-        return;
-    }
-
-    if (!MONGO_URI) {
-        console.error("❌ ERROR: MONGO_URI belum diatur di Vercel Environment Variables.");
-        return;
-    }
-    
-    mongoose.connect(MONGO_URI)
-        .then(() => {
-            console.log('✅ Berhasil terhubung ke MongoDB Atlas (VERCEL)');
-        })
-        .catch(err => {
-            console.error('❌ Koneksi MongoDB Atlas GAGAL:', err.message);
-            console.error('Cek MONGO_URI di Vercel dan Network Access di Atlas.');
-        });
-}
 
 // --- INICIALISASI APLIKASI ---
 
-// Lakukan koneksi database sesuai mode
-startMongoDBServer(); // Akan berjalan di lokal, dilewati di Vercel
-connectToAtlas();     // Akan dilewati di lokal, berjalan di Vercel
+startMongoDBServer();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -154,12 +120,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-    // WAJIB menggunakan ENV Variable di Vercel (atau kunci lokal)
-    secret: process.env.SESSION_SECRET || 'ini-adalah-kunci-rahasia-yang-sangat-panjang', 
+    secret: 'ini-adalah-kunci-rahasia-yang-sangat-panjang',
     resave: false,
     saveUninitialized: false,
-    // Gunakan MONGO_URI yang telah disesuaikan (lokal atau Atlas)
-    store: MongoStore.create({ mongoUrl: MONGO_URI }) 
+    store: MongoStore.create({ mongoUrl: MONGO_URI })
 }));
 
 app.use('/', authRoutes);
@@ -170,9 +134,9 @@ app.get('/', (req, res) => {
 });
 
 const server = app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT} [Mode: ${IS_PRODUCTION ? 'PRODUCTION/VERCEL' : 'DEVELOPMENT/LOKAL'}]`);
+    console.log(`Server berjalan di http://localhost:${PORT}`);
     
-    // Mulai Tunnel HANYA jika di lokal/Termux
+    // Mulai Tunnel setelah server utama berjalan
     startAutoSshTunnel(); 
 });
 
