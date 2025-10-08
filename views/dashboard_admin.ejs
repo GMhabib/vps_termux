@@ -26,33 +26,6 @@
             --hover-bg-color: rgba(0, 191, 255, 0.15); /* Deep Sky Blue */
         }
 
-<<<<<<< HEAD
-        /* --- CSS BARU UNTUK ANIMASI KONTEN --- */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .container, .card {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .table-hover tbody tr {
-            transition: all 0.2s ease-in-out;
-        }
-        .table-hover tbody tr:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            cursor: pointer;
-        }
-        .btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .btn:hover {
-            transform: scale(1.05);
-        }
-        /* --- AKHIR CSS BARU KONTEN --- */
-
-        /* CSS untuk Terminal ditambahkan agar lebih rapi */
-=======
         body { 
             font-family: 'Poppins', sans-serif;
             background-color: #0f0c29;
@@ -144,7 +117,6 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
         /* Terminal */
->>>>>>> c196310 (update tampilan)
         #terminal {
             background-color: rgba(20, 20, 30, 0.8);
             color: #d4d4d4; padding: 15px; border-radius: 0.5rem;
@@ -169,66 +141,16 @@
             transition: all 0.4s ease-in-out;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-<<<<<<< HEAD
-        /* --- CSS BARU UNTUK KURSOR TERMINAL --- */
-        #terminal-prompt .cursor {
-            display: inline-block;
-            background-color: #f8f9fa;
-            width: 10px;
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-            from, to { background-color: transparent; }
-            50% { background-color: #f8f9fa; }
-        }
-        /* --- AKHIR CSS BARU KURSOR TERMINAL --- */
-
-        /* --- CSS BARU UNTUK NOTIFIKASI --- */
-        #notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: white;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(20px);
-            transition: all 0.4s ease-in-out;
-        }
-        #notification.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        #notification.success { background-color: #198754; }
-        #notification.error { background-color: #dc3545; }
-        #notification.info { background-color: #0d6efd; }
-        /* --- AKHIR CSS BARU NOTIFIKASI --- */
-=======
         #notification.show { opacity: 1; visibility: visible; transform: translateY(0); }
         #notification.success { background: linear-gradient(45deg, #198754, #157347); }
         #notification.error { background: linear-gradient(45deg, #dc3545, #bb2d3b); }
         #notification.info { background: linear-gradient(45deg, #0d6efd, #0b5ed7); }
 
->>>>>>> c196310 (update tampilan)
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark glassmorphic sticky-top">
         <div class="container-fluid">
-<<<<<<< HEAD
-            <a class="navbar-brand" href="/dashboard">Admin Panel</a>
-            <div class="d-flex text-white overflow-scroll text-nowrap">
-                <span class="navbar-text me-3">
-                    Selamat Datang, <strong><%= user.username %></strong> (<%= user.role %>)
-                </span>
-                <button type="button" class="btn btn-outline-info me-3" data-bs-toggle="modal" data-bs-target="#userManagementModal">
-                    <i class="fas fa-users"></i> User Management
-                </button>
-                <a href="/logout" class="btn btn-outline-danger">Logout</a>
-=======
             <a class="navbar-brand" href="/dashboard"><i class="fas fa-shield-halved me-2"></i> Admin Panel</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -243,7 +165,6 @@
                     </button>
                     <a href="/logout" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
                 </div>
->>>>>>> c196310 (update tampilan)
             </div>
         </div>
     </nav>
@@ -251,11 +172,7 @@
     <div class="container my-5">
         <div class="row">
             <div class="col-12">
-<<<<<<< HEAD
-                <div class="card">
-=======
                 <div class="card glassmorphic">
->>>>>>> c196310 (update tampilan)
                     <div class="card-header">
                         <h3><i class="fas fa-folder-open me-3 text-info"></i> File Manager</h3>
                     </div>
@@ -314,21 +231,13 @@
                                                             <button type="button" class="btn btn-info btn-sm edit-btn" data-path="<%= file.path %>" title="Edit"><i class="fas fa-edit"></i></button>
                                                         <% } %>
                                                         <% if (/\.(zip|tar|tar\.gz|tgz)$/i.test(file.name)) { %>
-<<<<<<< HEAD
-                                                            <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" class="extract-form">
-=======
                                                             <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" class="d-inline extract-form">
->>>>>>> c196310 (update tampilan)
                                                                 <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i></button>
                                                             </form>
                                                         <% } %>
                                                     <% } %>
                                                      <% if (file.name !== '.. (Kembali)' && user.role === 'admin') { %>
-<<<<<<< HEAD
-                                                        <form action="/admin/delete/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus <%= file.name %>?');" class="delete-file-form">
-=======
                                                         <form action="/admin/delete/<%= encodeURIComponent(file.path) %>" method="POST" class="d-inline delete-file-form">
->>>>>>> c196310 (update tampilan)
                                                             <button type="submit" class="btn btn-danger btn-sm" title="Hapus"><i class="fas fa-trash"></i></button>
                                                         </form>
                                                      <% } %>
@@ -391,19 +300,6 @@
     
     <div class="modal fade" id="userManagementModal" tabindex="-1" aria-labelledby="userManagementModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-<<<<<<< HEAD
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="userManagementModalLabel"><i class="fas fa-users"></i> Manajemen Pengguna</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <button type="button" id="delete-all-users-btn-modal" class="btn btn-sm btn-outline-danger">
-                            <i class="fas fa-user-slash"></i> Hapus Semua User
-                        </button>
-                        <p class="small text-muted mt-2">Tindakan ini akan menghapus semua user **kecuali** Anda sendiri.</p>
-=======
             <div class="modal-content glassmorphic">
                 <div class="modal-header">
                     <h5 class="modal-title" id="userManagementModalLabel"><i class="fas fa-users me-2"></i> Manajemen Pengguna</h5>
@@ -415,7 +311,6 @@
                             <i class="fas fa-user-slash me-2"></i> Hapus Semua User (Selain Anda)
                         </button>
                         <p class="small text-white-50 mt-2 mb-0">Tindakan ini tidak dapat diurungkan.</p>
->>>>>>> c196310 (update tampilan)
                     </div>                     
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -433,17 +328,10 @@
                                         <td><span class="badge bg-<%= u.role === 'admin' ? 'success' : 'secondary' %>"><%= u.role %></span></td>
                                         <td>
                                             <% if (user.role === 'admin') { %>
-<<<<<<< HEAD
-                                                <form action="/delete-user/<%= u._id %>" method="POST" class="delete-user-form-modal" data-username="<%= u.username %>">
-                                                    <button type="submit" class="btn btn-danger btn-sm" 
-                                                        <%= user._id.toString() === u._id.toString() ? 'disabled' : '' %>>
-                                                        Hapus
-=======
                                                 <form action="/delete-user/<%= u._id %>" method="POST" class="d-inline delete-user-form-modal" data-username="<%= u.username %>">
                                                     <button type="submit" class="btn btn-danger btn-sm" 
                                                         <%= user._id.toString() === u._id.toString() ? 'disabled' : '' %>>
                                                         <i class="fas fa-trash"></i>
->>>>>>> c196310 (update tampilan)
                                                     </button>
                                                 </form>
                                             <% } %>
@@ -468,18 +356,6 @@
         // SCRIPT JAVASCRIPT ANDA TIDAK PERLU DIUBAH
         // Logika yang sudah ada sudah sangat baik dan berfungsi dengan tema baru.
         document.addEventListener('DOMContentLoaded', () => {
-<<<<<<< HEAD
-
-            // --- FUNGSI BARU UNTUK NOTIFIKASI ---
-            const notification = document.getElementById('notification');
-            function showNotification(message, type = 'success') {
-                notification.textContent = message;
-                notification.className = ''; // Reset classes
-                notification.classList.add('show', type);
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000); // Sembunyikan setelah 3 detik
-=======
             const notification = document.getElementById('notification');
             function showNotification(message, type = 'success') {
                 notification.textContent = message;
@@ -488,7 +364,6 @@
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
->>>>>>> c196310 (update tampilan)
             }
 
             const editModal = new bootstrap.Modal(document.getElementById('editFileModal'));
@@ -505,17 +380,7 @@
                         const response = await fetch(`/admin/get-content/${encodeURIComponent(filePath)}`);
                         if (!response.ok) {
                             const errorText = await response.text();
-<<<<<<< HEAD
-                            const status = response.status;
-                            try {
-                                const errorJson = JSON.parse(errorText);
-                                throw new Error(`Status ${status}: ${errorJson.message || errorText}`);
-                            } catch {
-                                throw new Error(`Status ${status}: Gagal memuat file. ${errorText.substring(0, 100)}...`);
-                            }
-=======
                             throw new Error(`Gagal memuat file: ${errorText.substring(0, 100)}...`);
->>>>>>> c196310 (update tampilan)
                         }
                         const content = await response.text();
                         document.getElementById('fileContent').value = content;
@@ -526,10 +391,6 @@
                 });
             });
 
-<<<<<<< HEAD
-            // LOGIKA FILE MANAGER (batch select, compress, delete)
-=======
->>>>>>> c196310 (update tampilan)
             const selectAllCheckbox = document.getElementById('select-all');
             const fileCheckboxes = document.querySelectorAll('.file-checkbox');
             selectAllCheckbox.addEventListener('change', (e) => {
@@ -551,11 +412,7 @@
                     batchForm.action = '/admin/batch-archive';
                     batchForm.submit();
                 } else {
-<<<<<<< HEAD
-                    showNotification('Pilih setidaknya satu item untuk dikompres.', 'error');
-=======
                     showNotification('Pilih setidaknya satu item untuk dikompres.', 'info');
->>>>>>> c196310 (update tampilan)
                 }
             });
 
@@ -566,41 +423,16 @@
                         batchForm.submit();
                     }
                  } else {
-<<<<<<< HEAD
-                     showNotification('Pilih setidaknya satu item untuk dihapus.', 'error');
-=======
                      showNotification('Pilih setidaknya satu item untuk dihapus.', 'info');
->>>>>>> c196310 (update tampilan)
                  }
             });
-            // Akhir Logika File Manager
 
-<<<<<<< HEAD
-            // =======================================================
-            // LOGIKA WEB SHELL
-            // =======================================================
-=======
->>>>>>> c196310 (update tampilan)
             const terminalOutput = document.getElementById('terminal');
             const terminalForm = document.getElementById('terminal-form');
             const terminalInput = document.getElementById('terminal-input');
             const currentPathInput = document.querySelector('input[name="currentPath"]');
 
             function typewriterEffect(element, text, callback) {
-<<<<<<< HEAD
-                let i = 0;
-                const speed = 10; 
-
-                function type() {
-                    if (i < text.length) {
-                        element.textContent += text.charAt(i);
-                        i++;
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight; 
-                        setTimeout(type, speed);
-                    } else if (callback) {
-                        callback();
-                    }
-=======
                 let i = 0; const speed = 10;
                 function type() {
                     if (i < text.length) {
@@ -608,7 +440,6 @@
                         terminalOutput.scrollTop = terminalOutput.scrollHeight; 
                         setTimeout(type, speed);
                     } else if (callback) { callback(); }
->>>>>>> c196310 (update tampilan)
                 }
                 type();
             }
@@ -618,13 +449,7 @@
                     e.preventDefault();
                     const command = terminalInput.value.trim();
                     if (command === '') return;
-<<<<<<< HEAD
-                    
-                    terminalInput.disabled = true; 
-
-=======
                     terminalInput.disabled = true;
->>>>>>> c196310 (update tampilan)
                     const commandEcho = document.createElement('div');
                     commandEcho.innerHTML = `<span style="color: #28a745;">$></span> ${command}`;
                     terminalOutput.appendChild(commandEcho);
@@ -635,35 +460,6 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ command, currentPath: currentPathInput.value })
                         });
-<<<<<<< HEAD
-
-                        const data = await response.json();
-                        const outputElement = document.createElement('pre');
-                        outputElement.style.margin = '0';
-                        
-                        if (!response.ok) {
-                            outputElement.style.color = '#dc3545';
-                            const errorMessage = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
-                            typewriterEffect(outputElement, errorMessage, () => {
-                                terminalInput.disabled = false;
-                                terminalInput.focus();
-                            });
-                        } else {
-                            typewriterEffect(outputElement, data.output, () => {
-                                terminalInput.disabled = false;
-                                terminalInput.focus();
-                            });
-                        }
-                        terminalOutput.appendChild(outputElement);
-
-                    } catch (error) {
-                        const errorElement = document.createElement('pre');
-                        errorElement.style.color = '#dc3545';
-                        const clientError = `Client/Network Error: ${error.message}`;
-                        typewriterEffect(errorElement, clientError, () => {
-                           terminalInput.disabled = false;
-                           terminalInput.focus();
-=======
                         const data = await response.json();
                         const outputElement = document.createElement('pre');
                         outputElement.style.margin = '0';
@@ -679,89 +475,12 @@
                         errorElement.style.color = '#dc3545';
                         typewriterEffect(errorElement, `Client/Network Error: ${error.message}`, () => {
                            terminalInput.disabled = false; terminalInput.focus();
->>>>>>> c196310 (update tampilan)
                         });
                         terminalOutput.appendChild(errorElement);
                     }
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 });
             }
-<<<<<<< HEAD
-            // Akhir Logika Web Shell
-
-            // =======================================================
-            // LOGIKA MANAJEMEN USER (DI MODAL)
-            // =======================================================
-
-            // 1. Logika Hapus Semua User (Telah dipindahkan ke modal)
-            document.getElementById('delete-all-users-btn-modal').addEventListener('click', async () => {
-                const confirmation = prompt("PERINGATAN! Anda akan menghapus SEMUA user (kecuali Anda sendiri).\n\nKetik 'HAPUS SEMUA' untuk melanjutkan:");
-
-                if (confirmation !== 'HAPUS SEMUA') {
-                    if (confirmation !== null) {
-                        showNotification('Penghapusan dibatalkan. Konfirmasi tidak cocok.', 'info');
-                    }
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/admin/delete-all-users', {
-                        method: 'POST',
-                        headers: { 'Accept': 'application/json' }
-                    });
-
-                    const result = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(result.message || 'Gagal menghapus semua user.');
-                    }
-
-                    showNotification(result.message, 'success');
-                    
-                    setTimeout(() => {
-                        window.location.reload(); 
-                    }, 1500); 
-
-                } catch (error) {
-                    showNotification(`Error: ${error.message}`, 'error');
-                }
-            });
-
-            // 2. Logika Hapus User Individu (Telah disesuaikan untuk modal)
-            document.querySelectorAll('.delete-user-form-modal').forEach(form => {
-                form.addEventListener('submit', function(e) { 
-                    const userName = this.dataset.username; 
-                    // Cek jika tombol disable (artinya user sendiri)
-                    if (this.querySelector('button[disabled]')) {
-                        e.preventDefault();
-                        return;
-                    }
-                    if (!confirm(`Yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan.`)) {
-                        e.preventDefault(); 
-                    }
-                });
-            });
-
-            // 3. Logika untuk form lain yang perlu konfirmasi (Ekstrak)
-            document.querySelectorAll('.extract-form').forEach(form => {
-                 form.addEventListener('submit', function(e) { 
-                    if (!confirm('Anda yakin ingin mengekstrak file ini?')) {
-                        e.preventDefault();
-                    }
-                 });
-            });
-            
-            // 4. Logika untuk form lain yang perlu konfirmasi (Hapus File)
-            document.querySelectorAll('.delete-file-form').forEach(form => {
-                 form.addEventListener('submit', function(e) { 
-                    const fileName = this.closest('tr').querySelector('a, span').textContent.trim();
-                    if (!confirm(`Anda yakin ingin menghapus "${fileName}"?`)) {
-                        e.preventDefault(); 
-                    }
-                 });
-            });
-
-=======
 
             document.getElementById('delete-all-users-btn-modal').addEventListener('click', async () => {
                 const confirmation = prompt("PERINGATAN! Anda akan menghapus SEMUA user (kecuali Anda).\n\nKetik 'HAPUS SEMUA' untuk melanjutkan:");
@@ -790,7 +509,6 @@
                     if (!confirm('Anda yakin ingin melanjutkan tindakan ini?')) { e.preventDefault(); }
                 });
             });
->>>>>>> c196310 (update tampilan)
         });
     </script>
 </body>
