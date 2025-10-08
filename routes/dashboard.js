@@ -18,7 +18,7 @@ if (!fs.existsSync(ROOT_UPLOAD_DIR)) {
 // Konfigurasi Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // PERBAIKAN: Jika Anda mengirim currentPath dari form, gunakan fungsi aman untuk menentukan destinasi
+        // PERBAIKAN: Gunakan fungsi resolvePath yang aman
         const targetPath = resolvePath(req.body.currentPath || ''); 
         cb(null, targetPath); 
     },
@@ -29,26 +29,27 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// --- MIDDLEWARE OTORISASI ---
+// --- MIDDLEWARE OTORISASI (Dipertahankan) ---
 
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         return next();
     }
-    if (req.accepts('html')) {
-        return res.redirect('/login');
+    // PERBAIKAN: Selalu kembalikan 401 JSON untuk permintaan AJAX
+    if (req.xhr || req.headers.accept.includes('json')) {
+        return res.status(401).json({ message: 'Sesi kedaluwarsa. Silakan login ulang.' });
     }
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.redirect('/login');
 }
 
 function isAdmin(req, res, next) {
     if (req.session.role === 'admin') {
         return next();
     }
-    if (req.accepts('html')) {
-        return res.status(403).send('Akses ditolak: Anda bukan admin.');
+    if (req.xhr || req.headers.accept.includes('json')) {
+        return res.status(403).json({ message: 'Akses ditolak: Anda bukan admin.' });
     }
-    return res.status(403).json({ message: 'Akses ditolak: Anda bukan admin.' });
+    return res.status(403).send('Akses ditolak: Anda bukan admin.');
 }
 
 // --- FUNGSI BANTUAN PATH (KEAMANAN KRITIS) ---
@@ -64,21 +65,17 @@ function resolvePath(requestedPath) {
     const resolvedFullPath = path.resolve(fullPath); 
     
     // Validasi Path Traversal
-    // Jika fullPath yang sudah di-resolve TIDAK dimulai dengan resolvedUploadDir, 
-    // berarti path tersebut keluar dari direktori yang diizinkan.
     if (!resolvedFullPath.startsWith(resolvedUploadDir + path.sep) && resolvedFullPath !== resolvedUploadDir) {
         console.warn(`Path Traversal Attempt Detected: ${requestedPath}. Redirecting to root.`);
         return ROOT_UPLOAD_DIR; 
     }
     
-    // Kembalikan full path yang telah diverifikasi keamanannya
     return fullPath; 
 }
 
-// --- FUNGSI BANTUAN ARCHIVE & EKSTRAKSI ---
+// --- FUNGSI BANTUAN ARCHIVE & EKSTRAKSI (Dipertahankan) ---
 
 function createZipArchive(itemsToArchive, currentDirectoryPath) {
-    // ... (Logika createZipArchive tetap sama) ...
     const zip = new AdmZip();
     let archiveName = `archive_${Date.now()}.zip`;
     const currentDirectoryFullPath = resolvePath(currentDirectoryPath); 
@@ -92,10 +89,8 @@ function createZipArchive(itemsToArchive, currentDirectoryPath) {
         const entryName = path.relative(currentDirectoryFullPath, fullPath); 
 
         if (stats.isDirectory()) {
-            // Pastikan entri direktori di zip diberi nama relatif
             zip.addLocalFolder(fullPath, entryName);
         } else {
-            // path.dirname(entryName) memberikan direktori di dalam ZIP
             zip.addLocalFile(fullPath, path.dirname(entryName));
         }
     });
@@ -141,7 +136,7 @@ function extractSingleFile(filenameWithExt) {
     }
 }
 
-// --- FUNGSI BANTUAN FILE LISTING (Tidak diubah, sudah benar) ---
+// --- FUNGSI BANTUAN FILE LISTING (Dipertahankan) ---
 
 function getFilesList(currentPath) {
     const fullPath = resolvePath(currentPath);
@@ -191,11 +186,10 @@ function getFilesList(currentPath) {
 }
 
 // ===================================
-// --- ROUTE UTAMA DAN USER ---
+// --- ROUTE UTAMA DAN FILE MANAGEMENT (Dipertahankan) ---
 // ===================================
 
 router.get('/dashboard', isAuthenticated, async (req, res) => {
-    // ... (Logika dashboard tetap sama) ...
     try {
         const user = await User.findById(req.session.userId);
         const allUsers = await User.find({}, 'username role');
@@ -231,7 +225,6 @@ router.post('/upload', isAuthenticated, upload.single('filedata'), (req, res) =>
     if (!req.file) {
         return res.status(400).send('Tidak ada file yang diunggah.');
     }
-    // Menggunakan currentPath dari hidden input di form
     res.redirect('/dashboard?path=' + encodeURIComponent(req.body.currentPath || '')); 
 });
 
@@ -270,12 +263,12 @@ router.get('/user/get-content/:filename', isAuthenticated, (req, res) => {
     });
 });
 
-// ROUTE BARU: Simpan perubahan file dari editor (USER & ADMIN)
+// ROUTE: Simpan perubahan file dari editor (USER & ADMIN)
 router.post('/user/edit/:filename', isAuthenticated, (req, res) => {
     const requestedPath = req.params.filename;
     const filePath = resolvePath(requestedPath);
     const newContent = req.body.fileContent;
-    const currentPathForRedirect = req.body.currentPath; // Ambil dari hidden input
+    const currentPathForRedirect = req.body.currentPath; 
 
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
         return res.status(404).send('File tidak ditemukan.');
@@ -287,7 +280,6 @@ router.post('/user/edit/:filename', isAuthenticated, (req, res) => {
             return res.status(500).send('Gagal menyimpan perubahan ke file.');
         }
         
-        // Redirect kembali ke direktori saat ini, bukan direktori induk
         res.redirect('/dashboard?path=' + encodeURIComponent(currentPathForRedirect || '')); 
     });
 });
@@ -313,7 +305,6 @@ router.post('/extract/:filename', isAuthenticated, (req, res) => {
             res.status(500).send(`
                 <h1>Server Error 500: Ekstraksi Gagal</h1>
                 <p><strong>Pesan:</strong> ${errorMessage}</p>
-                <p>Periksa konsol server untuk detail seperti "Invalid CEN header" (biasanya berarti file rusak).</p>
                 <a href="/dashboard?path=${encodedParentPath}">Kembali ke Direktori Sebelumnya</a>
             `);
         } else {
@@ -327,10 +318,94 @@ router.post('/extract/:filename', isAuthenticated, (req, res) => {
 
 
 // ===================================
-// --- ROUTE ADMIN (TIDAK ADA PERUBAHAN BESAR) ---
+// --- ROUTE SHELL (WEB SHELL) ---
 // ===================================
 
-// ROUTE: Ambil konten file untuk editor (Admin Only - Redundant, tapi dipertahankan)
+/**
+ * ROUTE BARU: Web Shell untuk User Biasa
+ * Memiliki pembatasan yang SANGAT ketat.
+ */
+router.post('/user/execute-command', isAuthenticated, (req, res) => {
+    const command = req.body.command;
+    const currentPath = req.body.currentPath || '';
+    const executionPath = resolvePath(currentPath);
+
+    if (!command) {
+        return res.status(400).json({ output: 'Perintah tidak boleh kosong.' }); 
+    }
+    
+    // --- SERVER-SIDE COMMAND BLOCKING UNTUK USER BIASA (SANGAT KETAT) ---
+    const strictDangerousCommands = [
+        /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
+        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow|ssh|httpd|mariadb|composer|npm|node)\b/i, // BLOKIR SEMUA TOOLS BERBAHAYA/SYSTEM UTK USER BIASA
+        /\b(apt|yum|pacman|dpkg|chown|chmod)\b/i,
+    ];
+    if (strictDangerousCommands.some(regex => regex.test(command))) {
+        return res.status(403).json({ output: 'Perintah sistem yang dilarang terdeteksi oleh server.' });
+    }
+    // --- AKHIR BLOKING ---
+
+    const options = {
+        cwd: executionPath,
+        timeout: 10000 
+    };
+
+    exec(command, options, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`User Shell Error: ${error.message}`);
+            return res.status(400).json({ output: `Error: ${error.message}` });
+        }
+        
+        res.json({ output: (stdout || '') + (stderr || '') });
+    });
+});
+
+
+/**
+ * ROUTE: Web Shell untuk Admin
+ * Diberi izin untuk menjalankan tools development yang diminta.
+ * PERBAIKAN: Ditambahkan middleware isAdmin!
+ */
+router.post('/admin/execute-command', isAuthenticated, isAdmin, (req, res) => {
+    const command = req.body.command;
+    const currentPath = req.body.currentPath || '';
+    const executionPath = resolvePath(currentPath);
+
+    if (!command) {
+        return res.status(400).json({ output: 'Perintah tidak boleh kosong.' }); 
+    }
+    
+    // --- SERVER-SIDE COMMAND BLOCKING UNTUK ADMIN (DILONGGARKAN untuk tools development) ---
+    const dangerousAdminCommands = [
+        /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
+        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
+        // TIDAK DIBLOKIR: node, npm, composer, php, ssh, mariadb, httpd (Tanggung jawab ada pada admin)
+    ];
+    if (dangerousAdminCommands.some(regex => regex.test(command))) {
+        return res.status(403).json({ output: 'Perintah sistem yang merusak dilarang.' });
+    }
+    // --- AKHIR BLOKING ---
+
+    const options = {
+        cwd: executionPath,
+        timeout: 20000 // Waktu tunggu sedikit lebih lama
+    };
+
+    exec(command, options, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Admin Shell Error: ${error.message}`);
+            return res.status(400).json({ output: `Error: ${error.message}` });
+        }
+        
+        res.json({ output: (stdout || '') + (stderr || '') });
+    });
+});
+
+
+// ===================================
+// --- ROUTE ADMIN (Dipertahankan) ---
+// ===================================
+
 router.get('/admin/get-content/:filename', isAuthenticated, isAdmin, (req, res) => {
     const filePath = resolvePath(req.params.filename);
 
@@ -347,62 +422,20 @@ router.get('/admin/get-content/:filename', isAuthenticated, isAdmin, (req, res) 
     });
 });
 
-// ROUTE: Simpan perubahan file dari editor (Admin Only - Redundant, tapi dipertahankan)
 router.post('/admin/edit/:filename', isAuthenticated, isAdmin, (req, res) => { 
     // Menggunakan route /user/edit yang lebih umum sudah cukup, tapi ini dipertahankan
     const requestedPath = req.params.filename;
     const filePath = resolvePath(requestedPath);
     const newContent = req.body.fileContent;
-    const parentPath = path.dirname(requestedPath);
-    
+    const currentPathForRedirect = req.body.currentPath;
+
     fs.writeFile(filePath, newContent, 'utf8', (err) => {
         if (err) {
             return res.status(500).send('Gagal menyimpan perubahan ke file.');
         }
-        res.redirect('/dashboard?path=' + encodeURIComponent(parentPath)); 
+        res.redirect('/dashboard?path=' + encodeURIComponent(currentPathForRedirect || '')); 
     });
 });
-
-
-// ROUTE: EKSEKUSI PERINTAH SHELL (Sekarang hanya butuh isAuthenticated)
-// PERHATIAN: Pastikan logika resolvePath DAN pencegahan perintah berbahaya di sini SANGAT KUAT!
-router.post('/admin/execute-command', isAuthenticated, (req, res) => {
-    const command = req.body.command;
-    const currentPath = req.body.currentPath || '';
-    const executionPath = resolvePath(currentPath); // Path harus aman
-
-    if (!command) {
-        return res.status(400).json({ output: 'Perintah tidak boleh kosong.' }); 
-    }
-    
-    // --- SERVER-SIDE COMMAND BLOCKING (Lapisan Keamanan Krusial) ---
-    const dangerousCommands = [
-        /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|rm|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
-        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i
-    ];
-    if (dangerousCommands.some(regex => regex.test(command))) {
-        // Response 403 karena perintah berbahaya
-        return res.status(403).json({ output: 'Perintah sistem yang dilarang terdeteksi oleh server.' });
-    }
-    // --- AKHIR BLOKING ---
-
-    const options = {
-        cwd: executionPath,
-        timeout: 10000 
-    };
-
-    exec(command, options, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Shell Error: ${error.message}`);
-            return res.status(400).json({ output: `Error: ${error.message}` });
-        }
-        
-        res.json({ output: (stdout || '') + (stderr || '') });
-    });
-});
-
-
-// ... (ROUTE ADMIN lainnya: batch-archive, delete, batch-delete, delete-user) ...
 
 router.post('/admin/batch-archive', isAuthenticated, isAdmin, (req, res) => {
     let itemsToArchive = req.body.items; 
@@ -523,12 +556,10 @@ router.post('/admin/delete-all-users', isAuthenticated, isAdmin, async (req, res
     try {
         const currentUserId = req.session.userId;
         
-        // Hapus semua user KECUALI user yang sedang login
         const result = await User.deleteMany({ _id: { $ne: currentUserId } });
         
         console.log(`ADMIN ACTION: Berhasil menghapus ${result.deletedCount} user.`);
         
-        // Kirim respons JSON untuk AJAX
         res.status(200).json({ 
             message: `Berhasil menghapus ${result.deletedCount} user (tidak termasuk Anda).`,
             deletedCount: result.deletedCount
@@ -544,9 +575,8 @@ router.post('/admin/delete-all-users', isAuthenticated, isAdmin, async (req, res
 // ===================================
 
 /**
- * ROUTE BARU: Eksekusi Perintah Tool Spesifik (HANYA ADMIN)
- * Ini adalah rute yang lebih spesifik untuk perintah instalasi/tooling
- * seperti 'npm install', 'composer update', 'php -v', dll.
+ * ROUTE: Eksekusi Perintah Tool Spesifik (HANYA ADMIN)
+ * Rute ini dipertahankan karena sudah spesifik untuk tools.
  */
 router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
     const command = req.body.command;
@@ -558,11 +588,10 @@ router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
     }
     
     // --- SERVER-SIDE COMMAND BLOCKING TAMBAHAN ---
-    // Meskipun sudah ada isAdmin, kita tetap amankan dari perintah paling merusak.
     const dangerousInstallCommands = [
+        /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
         /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
-        /\b(shutdown|reboot|format|dd)\b/i,
-        /\b(apt|yum|pacman|dpkg)\b/i, // Blokir package manager OS utama
+        /\b(apt|yum|pacman|dpkg|chown|chmod)\b/i, // Blokir package manager OS utama
     ];
     if (dangerousInstallCommands.some(regex => regex.test(command))) {
         return res.status(403).json({ output: 'Perintah instalasi/sistem yang sangat berbahaya dilarang.' });
@@ -571,8 +600,8 @@ router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
 
     const options = {
         cwd: executionPath,
-        timeout: 60000, // Timeout lebih lama (60 detik) untuk instalasi
-        maxBuffer: 1024 * 1024 * 5 // Buffer 5MB untuk output panjang
+        timeout: 60000, 
+        maxBuffer: 1024 * 1024 * 5 
     };
 
     console.log(`ADMIN TOOL EXEC: Executing "${command}" in ${executionPath}`);
@@ -586,4 +615,5 @@ router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
         res.json({ output: (stdout || '') + (stderr || '') });
     });
 });
+
 module.exports = router;
