@@ -539,5 +539,51 @@ router.post('/admin/delete-all-users', isAuthenticated, isAdmin, async (req, res
         res.status(500).json({ message: 'Gagal menghapus semua user di server.' });
     }
 });
+// ===================================
+// --- ROUTE BARU: ADMIN EXECUTION TOOL (Instalasi/Tooling) ---
+// ===================================
 
+/**
+ * ROUTE BARU: Eksekusi Perintah Tool Spesifik (HANYA ADMIN)
+ * Ini adalah rute yang lebih spesifik untuk perintah instalasi/tooling
+ * seperti 'npm install', 'composer update', 'php -v', dll.
+ */
+router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
+    const command = req.body.command;
+    const currentPath = req.body.currentPath || '';
+    const executionPath = resolvePath(currentPath);
+
+    if (!command) {
+        return res.status(400).json({ output: 'Perintah tidak boleh kosong.' }); 
+    }
+    
+    // --- SERVER-SIDE COMMAND BLOCKING TAMBAHAN ---
+    // Meskipun sudah ada isAdmin, kita tetap amankan dari perintah paling merusak.
+    const dangerousInstallCommands = [
+        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
+        /\b(shutdown|reboot|format|dd)\b/i,
+        /\b(apt|yum|pacman|dpkg)\b/i, // Blokir package manager OS utama
+    ];
+    if (dangerousInstallCommands.some(regex => regex.test(command))) {
+        return res.status(403).json({ output: 'Perintah instalasi/sistem yang sangat berbahaya dilarang.' });
+    }
+    // --- AKHIR BLOKING ---
+
+    const options = {
+        cwd: executionPath,
+        timeout: 60000, // Timeout lebih lama (60 detik) untuk instalasi
+        maxBuffer: 1024 * 1024 * 5 // Buffer 5MB untuk output panjang
+    };
+
+    console.log(`ADMIN TOOL EXEC: Executing "${command}" in ${executionPath}`);
+    
+    exec(command, options, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Tool Execution Error: ${error.message}`);
+            return res.status(400).json({ output: `Error: ${error.message}\n${stderr}` });
+        }
+        
+        res.json({ output: (stdout || '') + (stderr || '') });
+    });
+});
 module.exports = router;
