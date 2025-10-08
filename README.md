@@ -12,6 +12,14 @@ kemudian install
 ```
 npm install
 ```
+kemudian kamu install modulenya
+```
+npm install express multer adm-zip tar mongoose
+```
+kemudian kamu juga install pm2
+```
+npm install -g pm2
+```
 kemudian jalankan di termux dengan url https://habib.serveo.net
 ```
 node server.js
