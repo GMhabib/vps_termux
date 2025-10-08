@@ -6,9 +6,10 @@ const fs = require('fs');
 const multer = require('multer'); 
 const AdmZip = require('adm-zip'); 
 const tar = require('tar');      
-const { exec } = require('child_process'); 
+const { exec, spawn } = require('child_process'); // <<< spawn DITAMBAHKAN!
 
 // Tentukan root directory untuk upload, pastikan ini di luar code base jika memungkinkan
+// ASUMSI: Setiap user memiliki folder unik di dalam ROOT_UPLOAD_DIR
 const ROOT_UPLOAD_DIR = path.join(__dirname, '..', 'public', 'uploads'); 
 
 if (!fs.existsSync(ROOT_UPLOAD_DIR)) {
@@ -136,7 +137,11 @@ function extractSingleFile(filenameWithExt) {
     }
 }
 
+<<<<<<< HEAD
 // --- FUNGSI BANTUAN FILE LISTING (Dipertahankan) ---
+=======
+// --- FUNGSI BANTUAN FILE LISTING ---
+>>>>>>> c196310 (update tampilan)
 
 function getFilesList(currentPath) {
     const fullPath = resolvePath(currentPath);
@@ -186,7 +191,11 @@ function getFilesList(currentPath) {
 }
 
 // ===================================
+<<<<<<< HEAD
 // --- ROUTE UTAMA DAN FILE MANAGEMENT (Dipertahankan) ---
+=======
+// --- ROUTE UTAMA DAN FILE MANAGEMENT ---
+>>>>>>> c196310 (update tampilan)
 // ===================================
 
 router.get('/dashboard', isAuthenticated, async (req, res) => {
@@ -323,7 +332,11 @@ router.post('/extract/:filename', isAuthenticated, (req, res) => {
 
 /**
  * ROUTE BARU: Web Shell untuk User Biasa
+<<<<<<< HEAD
  * Memiliki pembatasan yang SANGAT ketat.
+=======
+ * Menggunakan EXEC (perintah harus selesai dalam waktu singkat).
+>>>>>>> c196310 (update tampilan)
  */
 router.post('/user/execute-command', isAuthenticated, (req, res) => {
     const command = req.body.command;
@@ -337,8 +350,14 @@ router.post('/user/execute-command', isAuthenticated, (req, res) => {
     // --- SERVER-SIDE COMMAND BLOCKING UNTUK USER BIASA (SANGAT KETAT) ---
     const strictDangerousCommands = [
         /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
+<<<<<<< HEAD
         /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow|ssh|httpd|mariadb|composer|npm|node)\b/i, // BLOKIR SEMUA TOOLS BERBAHAYA/SYSTEM UTK USER BIASA
         /\b(apt|yum|pacman|dpkg|chown|chmod)\b/i,
+=======
+        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow|chown)\b/i, 
+        /\b(apt|pkg|yum|pacman|dpkg)\b/i, // Blokir package manager
+        /\b(php\s+-S|node\s|python\s+-m\s+http\.server|npm\s+start|ssh|ssh\s+-R|autossh\s+-M\s+|autossh|npm\s+install)\b/i, // BLOKIR PERINTAH JANGKA PANJANG
+>>>>>>> c196310 (update tampilan)
     ];
     if (strictDangerousCommands.some(regex => regex.test(command))) {
         return res.status(403).json({ output: 'Perintah sistem yang dilarang terdeteksi oleh server.' });
@@ -363,11 +382,18 @@ router.post('/user/execute-command', isAuthenticated, (req, res) => {
 
 /**
  * ROUTE: Web Shell untuk Admin
+<<<<<<< HEAD
  * Diberi izin untuk menjalankan tools development yang diminta.
  * PERBAIKAN: Ditambahkan middleware isAdmin!
  */
 router.post('/admin/execute-command', isAuthenticated, isAdmin, (req, res) => {
     const command = req.body.command;
+=======
+ * Menggunakan SPAWN dengan detached mode untuk perintah jangka panjang.
+ */
+router.post('/admin/execute-command', isAuthenticated, isAdmin, (req, res) => {
+    const command = req.body.command.trim();
+>>>>>>> c196310 (update tampilan)
     const currentPath = req.body.currentPath || '';
     const executionPath = resolvePath(currentPath);
 
@@ -375,20 +401,71 @@ router.post('/admin/execute-command', isAuthenticated, isAdmin, (req, res) => {
         return res.status(400).json({ output: 'Perintah tidak boleh kosong.' }); 
     }
     
+<<<<<<< HEAD
     // --- SERVER-SIDE COMMAND BLOCKING UNTUK ADMIN (DILONGGARKAN untuk tools development) ---
     const dangerousAdminCommands = [
         /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
         /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
         // TIDAK DIBLOKIR: node, npm, composer, php, ssh, mariadb, httpd (Tanggung jawab ada pada admin)
+=======
+    const parts = command.split(/\s+/);
+    const cmd = parts[0];
+    const args = parts.slice(1);
+
+    // --- SERVER-SIDE COMMAND BLOCKING UNTUK ADMIN (HANYA YANG MERUSAK) ---
+    const dangerousAdminCommands = [
+        /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
+        /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
+        // package manager & server diizinkan
+>>>>>>> c196310 (update tampilan)
     ];
     if (dangerousAdminCommands.some(regex => regex.test(command))) {
         return res.status(403).json({ output: 'Perintah sistem yang merusak dilarang.' });
     }
     // --- AKHIR BLOKING ---
+<<<<<<< HEAD
 
     const options = {
         cwd: executionPath,
         timeout: 20000 // Waktu tunggu sedikit lebih lama
+=======
+    
+    // === LOGIKA UNTUK MENANGANI PERINTAH JANGKA PANJANG (PHP -S, SSH, dll.) ===
+    const longRunningCommands = ['php', 'node', 'python', 'npm', 'ssh', 'autossh'];
+    const isServerCommand = command.includes('-S') || command.includes('start');
+
+    if (longRunningCommands.includes(cmd) && (isServerCommand || cmd === 'ssh' || cmd === 'autossh')) {
+        try {
+            // Jalankan proses dalam mode 'detached'
+            const child = spawn(cmd, args, {
+                cwd: executionPath,
+                detached: true, // WAJIB: TIDAK menunggu proses selesai
+                stdio: 'ignore', // WAJIB: Abaikan I/O untuk mencegah hang
+                shell: true      
+            });
+
+            child.unref(); // Lepaskan referensi
+
+            const successMessage = `[INFO]: Perintah '${command}' berhasil dimulai di latar belakang (PID: ${child.pid}). Output TIDAK akan dikembalikan ke shell ini. Gunakan 'kill ${child.pid}' untuk menghentikannya.`;
+
+            return res.json({ 
+                output: successMessage,
+                newPath: currentPath 
+            });
+
+        } catch (error) {
+            console.error(`Error memulai proses latar belakang: ${error.message}`);
+            return res.status(500).json({ output: `Gagal memulai proses latar belakang: ${error.message}` });
+        }
+    }
+    // === AKHIR LOGIKA JANGKA PANJANG ===
+
+
+    // === LOGIKA DEFAULT UNTUK PERINTAH JANGKA PENDEK (Admin) ===
+    const options = {
+        cwd: executionPath,
+        timeout: 10000 // Waktu tunggu tetap 10 detik untuk perintah normal
+>>>>>>> c196310 (update tampilan)
     };
 
     exec(command, options, (error, stdout, stderr) => {
@@ -403,7 +480,11 @@ router.post('/admin/execute-command', isAuthenticated, isAdmin, (req, res) => {
 
 
 // ===================================
+<<<<<<< HEAD
 // --- ROUTE ADMIN (Dipertahankan) ---
+=======
+// --- ROUTE ADMIN ---
+>>>>>>> c196310 (update tampilan)
 // ===================================
 
 router.get('/admin/get-content/:filename', isAuthenticated, isAdmin, (req, res) => {
@@ -570,13 +651,22 @@ router.post('/admin/delete-all-users', isAuthenticated, isAdmin, async (req, res
         res.status(500).json({ message: 'Gagal menghapus semua user di server.' });
     }
 });
+<<<<<<< HEAD
+=======
+
+>>>>>>> c196310 (update tampilan)
 // ===================================
 // --- ROUTE BARU: ADMIN EXECUTION TOOL (Instalasi/Tooling) ---
 // ===================================
 
 /**
  * ROUTE: Eksekusi Perintah Tool Spesifik (HANYA ADMIN)
+<<<<<<< HEAD
  * Rute ini dipertahankan karena sudah spesifik untuk tools.
+=======
+ * Rute ini dipertahankan, namun biasanya `/admin/execute-command` sudah cukup.
+ * Menggunakan EXEC (perintah harus selesai dalam waktu singkat).
+>>>>>>> c196310 (update tampilan)
  */
 router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
     const command = req.body.command;
@@ -591,7 +681,11 @@ router.post('/admin/execute-tool', isAuthenticated, isAdmin, (req, res) => {
     const dangerousInstallCommands = [
         /\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm\s+-fr.*\/|rm\s+-rf.*\/|pkill|kill\s+-9|shutdown|reboot|format|dd)\b/i, 
         /\b(useradd|usermod|passwd|etc\/passwd|etc\/shadow)\b/i,
+<<<<<<< HEAD
         /\b(apt|yum|pacman|dpkg|chown|chmod)\b/i, // Blokir package manager OS utama
+=======
+        /\b(apt|pkg|yum|pacman|dpkg|chown)\b/i, // Blokir package manager OS utama
+>>>>>>> c196310 (update tampilan)
     ];
     if (dangerousInstallCommands.some(regex => regex.test(command))) {
         return res.status(403).json({ output: 'Perintah instalasi/sistem yang sangat berbahaya dilarang.' });

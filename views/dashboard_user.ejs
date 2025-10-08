@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>User Dashboard - Glassmorphism</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
         /*
+<<<<<<< HEAD
         * CSS ini memastikan tampilan responsif, animasi, dan shell bekerja dengan baik.
         */
         body { 
@@ -49,11 +56,111 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             background-color: #e9f5ff; 
             cursor: pointer;
+=======
+        * CSS PERBAIKAN DENGAN TEMA GLASSMORPHISM
+        */
+
+        :root {
+            --card-bg-color: rgba(255, 255, 255, 0.15);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --text-color: #f0f0f0;
+            --text-muted-color: #c0c0c0;
+            --blur-intensity: 10px;
+        }
+
+        body { 
+            font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+            /* Latar belakang gradient SVG yang ringan */
+            background-color: #1a1a2e;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 1600 800'%3E%3Cg %3E%3Cpolygon fill='%231b213b' points='1600 160 0 460 0 350 1600 50'/%3E%3Cpolygon fill='%231c2848' points='1600 260 0 560 0 450 1600 150'/%3E%3Cpolygon fill='%231d2f55' points='1600 360 0 660 0 550 1600 250'/%3E%3Cpolygon fill='%231e3662' points='1600 460 0 760 0 650 1600 350'/%3E%3Cpolygon fill='%231F3D6F' points='1600 800 0 800 0 750 1600 450'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+            background-size: cover;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        /* --- STYLE INTI GLASSMORPHISM --- */
+        .glassmorphic {
+            background: var(--card-bg-color);
+            backdrop-filter: blur(var(--blur-intensity));
+            -webkit-backdrop-filter: blur(var(--blur-intensity)); /* Untuk Safari */
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- PENERAPAN PADA ELEMEN --- */
+        .navbar.glassmorphic {
+            border-radius: 0; /* Navbar tidak perlu rounded corner */
+            border-left: none;
+            border-right: none;
+            border-top: none;
+        }
+        
+        .card.glassmorphic {
+            border: none;
+        }
+
+        .modal-content.glassmorphic {
+             border: 1px solid var(--border-color);
+        }
+        
+        .card-header, .modal-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h3, h5, .navbar-brand, .navbar-text {
+            color: var(--text-color) !important;
+        }
+
+        .path-display {
+            background-color: rgba(0,0,0,0.2);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            word-break: break-all;
+            border-left: 5px solid #00bcd4; 
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+        
+        /* Tabel */
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(0, 0, 0, 0.1);
+            --bs-table-hover-bg: rgba(0, 188, 212, 0.2);
+            --bs-table-color: var(--text-color);
+            --bs-table-border-color: var(--border-color);
+        }
+        .table a {
+            color: #80deea !important; /* Cyan-like color */
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .table a:hover {
+            color: #ffffff !important;
+        }
+        .table-responsive { max-height: 60vh; }
+        thead th {
+            color: var(--text-muted-color);
+        }
+
+        /* Animasi */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .container, .glassmorphic {
+            animation: fadeIn 0.7s ease-out forwards;
+>>>>>>> c196310 (update tampilan)
         }
         .btn {
             transition: all 0.2s ease-in-out;
         }
         .btn:hover {
+<<<<<<< HEAD
             transform: translateY(-1px) scale(1.02);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
@@ -130,11 +237,94 @@
             }
             .table-responsive {
                 max-height: 50vh;
+=======
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* --- CSS UNTUK MODAL & TERMINAL --- */
+        .modal-header, .modal-footer {
+            border-color: var(--border-color);
+        }
+
+        #terminal {
+            background-color: rgba(20, 20, 30, 0.85); /* Sedikit transparan */
+            color: #d4d4d4;
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            height: 450px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            border-radius: 0.5rem;
+        }
+        #terminal-input-container {
+            display: flex;
+            background-color: rgba(20, 20, 30, 0.85);
+            padding: 10px 15px;
+            border-top: 1px solid #3a3a3a;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        #terminal-input {
+            flex-grow: 1; background-color: transparent; border: none;
+            color: #d4d4d4; outline: none; caret-color: #00bcd4;
+            
+        }
+        #terminal-prompt { color: #4CAF50; margin-right: 10px; font-weight: bold; overflow: scroll; }
+
+        /* Notifikasi */
+        #notification {
+            position: fixed; bottom: 20px; right: 20px;
+            padding: 15px 25px; border-radius: 8px; color: white;
+            z-index: 9999; opacity: 0; visibility: hidden;
+            transform: translateY(20px); transition: all 0.4s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            /* Style notifikasi default */
+            background: linear-gradient(45deg, #28a745, #218838);
+        }
+        #notification.error { background: linear-gradient(45deg, #dc3545, #c82333); }
+        #notification.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        /* Form */
+        .form-control {
+            background-color: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+        .form-control:focus {
+            background-color: rgba(0,0,0,0.3);
+            border-color: #00bcd4;
+            box-shadow: 0 0 0 0.25rem rgba(0, 188, 212, 0.25);
+            color: var(--text-color);
+        }
+        .form-control::placeholder { color: var(--text-muted-color); }
+        /* Style untuk input file */
+        .form-control[type="file"]::file-selector-button {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color .15s ease-in-out;
+        }
+        .form-control[type="file"]::file-selector-button:hover {
+            background-color: #0b5ed7;
+        }
+
+
+        /* Responsifitas Tambahan */
+        @media (max-width: 768px) {
+            .action-buttons form, .action-buttons button, .action-buttons a {
+                margin: 5px 0; display: block; width: 100%;
+>>>>>>> c196310 (update tampilan)
             }
         }
     </style>
 </head>
 <body>
+<<<<<<< HEAD
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container-fluid container">
             <a class="navbar-brand" href="/dashboard"><i class="fas fa-cubes"></i> User Files</a>
@@ -143,12 +333,23 @@
                     Selamat Datang, <strong><%= user.username %></strong>
                 </span>
                 <a href="/logout" class="btn btn-outline-light"><i class="fas fa-sign-out-alt"></i> Logout</a>
+=======
+    <nav class="navbar navbar-expand-lg navbar-dark glassmorphic sticky-top">
+        <div class="container-fluid container">
+            <a class="navbar-brand" href="/dashboard"><i class="fas fa-cubes me-2"></i> User Files</a>
+            <div class="d-flex text-white align-items-center">
+                <span class="navbar-text me-3 d-none d-md-inline">
+                    Selamat Datang, <strong><%= user.username %></strong>
+                </span>
+                <a href="/logout" class="btn btn-outline-light"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+>>>>>>> c196310 (update tampilan)
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container mt-5">
         <div class="row justify-content-center">
+<<<<<<< HEAD
             <div class="col-lg-10 col-12">
                 <div class="card mb-4">
                     <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
@@ -178,6 +379,36 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Nama</th>
+=======
+            <div class="col-lg-11 col-12">
+                <div class="card glassmorphic mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0 d-flex align-items-center"><i class="fas fa-folder-open me-3 text-info"></i> File Manager</h3>
+                        <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#webShellModal">
+                            <i class="fas fa-terminal me-2"></i> Buka Web Shell
+                        </button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="p-3 mb-4 rounded" style="background-color: rgba(0,0,0,0.2);">
+                            <h5 class="text-light"><i class="fas fa-upload me-2 text-primary"></i> Upload File Baru</h5>
+                            <form action="/upload" method="POST" enctype="multipart/form-data" class="d-flex flex-column flex-md-row mt-3">
+                                <input type="hidden" name="currentPath" value="<%= currentPath %>">
+                                <input class="form-control me-md-2 mb-2 mb-md-0" type="file" name="filedata" required>
+                                <button class="btn btn-primary flex-shrink-0" type="submit"><i class="fas fa-cloud-upload-alt me-2"></i>Upload</button>
+                            </form>
+                        </div>
+                        
+                        <h5 class="mt-4 text-light"><i class="fas fa-list-alt me-2 text-success"></i> Daftar File & Folder</h5>
+                        <div class="path-display">
+                            <i class="fas fa-location-arrow me-2"></i> Lokasi: <strong>/<%= currentPath.replace(/\\/g, '/') %></strong>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="border-bottom border-secondary">
+                                    <tr>
+                                        <th class="py-3">Nama</th>
+>>>>>>> c196310 (update tampilan)
                                         <th class="text-nowrap">Ukuran</th>
                                         <th class="text-nowrap">Aksi</th>
                                     </tr>
@@ -188,24 +419,36 @@
                                             <td class="text-truncate" style="max-width: 250px;">
                                                 <% if (file.isDirectory) { %>
                                                     <i class="fas fa-folder text-warning me-2"></i>
+<<<<<<< HEAD
                                                     <a href="/dashboard?path=<%= encodeURIComponent(file.path) %>" class="text-decoration-none text-dark fw-bold"><%= file.name %></a>
+=======
+                                                    <a href="/dashboard?path=<%= encodeURIComponent(file.path) %>"><%= file.name %></a>
+>>>>>>> c196310 (update tampilan)
                                                 <% } else { %>
                                                     <i class="fas fa-file text-secondary me-2"></i> <%= file.name %>
                                                 <% } %>
                                             </td>
                                             <td><span class="badge bg-info text-dark"><%= file.size %></span></td>
+<<<<<<< HEAD
                                             <td class="text-nowrap">
+=======
+                                            <td class="action-buttons">
+>>>>>>> c196310 (update tampilan)
                                                 <% if (!file.isDirectory) { %>
-                                                    <a href="/download/<%= encodeURIComponent(file.path) %>" class="btn btn-success btn-sm" title="Download"><i class="fas fa-download"></i> Download</a>
+                                                    <a href="/download/<%= encodeURIComponent(file.path) %>" class="btn btn-success btn-sm" title="Download"><i class="fas fa-download"></i></a>
                                                     
                                                     <% if (/\.(zip|tar|tar\.gz|tgz)$/i.test(file.name)) { %>
-                                                        <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Yakin ingin mengekstrak <%= file.name %>?');">
-                                                            <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i> Ekstrak</button>
+                                                        <form action="/extract/<%= encodeURIComponent(file.path) %>" method="POST" onsubmit="return confirm('Yakin ingin mengekstrak <%= file.name %>?');" class="d-inline">
+                                                            <button type="submit" class="btn btn-warning btn-sm" title="Ekstrak"><i class="fas fa-box-open"></i></button>
                                                         </form>
                                                     <% } %>
                                                     
+<<<<<<< HEAD
                                                     <button type="button" class="btn btn-info btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editFileModal" data-path="<%= file.path %>" title="Edit File"><i class="fas fa-edit"></i> Edit</button>
 
+=======
+                                                    <button type="button" class="btn btn-info btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editFileModal" data-path="<%= file.path %>" title="Edit File"><i class="fas fa-edit"></i></button>
+>>>>>>> c196310 (update tampilan)
                                                 <% } %>
                                             </td>
                                         </tr>
@@ -217,11 +460,15 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
         
+=======
+>>>>>>> c196310 (update tampilan)
         <div class="mb-5"></div>
     </div>
     
     <div class="modal fade" id="webShellModal" tabindex="-1" aria-labelledby="webShellModalLabel" aria-hidden="true">
+<<<<<<< HEAD
         <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-md-down">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
@@ -239,13 +486,32 @@
                     <form id="terminal-form">
                         <div id="terminal-input-container">
                             <span id="terminal-prompt" class="pe-2 text-nowrap"><%= user.username %>@server:<span style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/').split('/').pop() %></span>$></span>
+=======
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content glassmorphic">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="webShellModalLabel"><i class="fas fa-terminal me-2"></i> Web Shell</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="terminal">
+                        <span>Selamat datang di Web Shell. Perintah berbahaya diblokir.</span><br>
+                        <span>Lokasi kerja: <strong style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/') %></strong></span>
+                    </div>
+                    <form id="terminal-form">
+                        <div id="terminal-input-container">
+                            <span id="terminal-prompt"><%= user.username %>@server:<span style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/').split('/').pop() || '~' %></span>$&nbsp;</span>
+>>>>>>> c196310 (update tampilan)
                             <input type="text" id="terminal-input" autocomplete="off" autofocus>
                             <input type="hidden" id="shell-current-path" value="<%= currentPath %>">
                         </div>
                     </form>
+<<<<<<< HEAD
                       </div>
                     </div>
                   </div>
+=======
+>>>>>>> c196310 (update tampilan)
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -256,19 +522,34 @@
     
     <div class="modal fade" id="editFileModal" tabindex="-1" aria-labelledby="editFileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
+<<<<<<< HEAD
             <div class="modal-content">
                 <form id="edit-form" method="POST">
                     <div class="modal-header bg-info text-white">
                         <h5 class="modal-title" id="editFileModalLabel"><i class="fas fa-edit"></i> Edit File: <span id="filename-span"></span></h5>
+=======
+            <div class="modal-content glassmorphic">
+                <form id="edit-form" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editFileModalLabel"><i class="fas fa-edit me-2"></i> Edit File: <span id="filename-span"></span></h5>
+>>>>>>> c196310 (update tampilan)
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body bg-light">
                         <input type="hidden" name="currentPath" value="<%= currentPath %>"> 
+<<<<<<< HEAD
                         <textarea name="fileContent" id="fileContent" class="form-control" rows="20" style="font-family: monospace;"></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Perubahan</button>
+=======
+                        <textarea name="fileContent" id="fileContent" class="form-control" rows="20" style="font-family: 'Courier New', Courier, monospace;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i> Simpan Perubahan</button>
+>>>>>>> c196310 (update tampilan)
                     </div>
                 </form>
             </div>
@@ -279,14 +560,26 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // SCRIPT JAVASCRIPT ANDA TIDAK PERLU DIUBAH
+        // Logika yang sudah ada berfungsi dengan baik.
         document.addEventListener('DOMContentLoaded', () => {
 
+<<<<<<< HEAD
             // --- FUNGSI NOTIFIKASI ---
+=======
+>>>>>>> c196310 (update tampilan)
             const notification = document.getElementById('notification');
             function showNotification(message, type = 'success') {
                 notification.textContent = message;
                 notification.className = ''; 
+<<<<<<< HEAD
                 notification.classList.add('show', type);
+=======
+                notification.classList.add('show');
+                if (type === 'error') {
+                    notification.classList.add('error');
+                }
+>>>>>>> c196310 (update tampilan)
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000); 
@@ -294,7 +587,10 @@
 
             const editModal = new bootstrap.Modal(document.getElementById('editFileModal'));
             
+<<<<<<< HEAD
             // Logika tombol Edit 
+=======
+>>>>>>> c196310 (update tampilan)
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', async (e) => {
                     const filePath = e.currentTarget.dataset.path;
@@ -305,10 +601,13 @@
                     
                     try {
                         const response = await fetch(`/user/get-content/${encodeURIComponent(filePath)}`);
-                        
                         if (!response.ok) {
+<<<<<<< HEAD
                             const errorText = await response.text();
                             throw new Error(`Gagal memuat file: ${errorText.substring(0, 100)}...`);
+=======
+                            throw new Error(`Gagal memuat file: Server merespon dengan status ${response.status}`);
+>>>>>>> c196310 (update tampilan)
                         }
                         const content = await response.text();
                         document.getElementById('fileContent').value = content;
@@ -319,15 +618,20 @@
                 });
             });
             
+<<<<<<< HEAD
             // =======================================================
             // LOGIKA WEB SHELL
             // =======================================================
+=======
+            // LOGIKA WEB SHELL
+>>>>>>> c196310 (update tampilan)
             const terminalOutput = document.getElementById('terminal');
             const terminalForm = document.getElementById('terminal-form');
             const terminalInput = document.getElementById('terminal-input');
             const shellCurrentPathInput = document.getElementById('shell-current-path');
             const webShellModal = document.getElementById('webShellModal');
 
+<<<<<<< HEAD
             // FOKUS INPUT SAAT MODAL TERBUKA
             webShellModal.addEventListener('shown.bs.modal', () => {
                 // Pastikan input fokus agar user bisa langsung mengetik
@@ -340,6 +644,15 @@
                 let i = 0;
                 const speed = 10; 
 
+=======
+            webShellModal.addEventListener('shown.bs.modal', () => {
+                terminalInput.focus(); 
+            });
+
+            function typewriterEffect(element, text, callback) {
+                let i = 0;
+                const speed = 10; 
+>>>>>>> c196310 (update tampilan)
                 function type() {
                     if (i < text.length) {
                         element.textContent += text.charAt(i);
@@ -353,6 +666,7 @@
                 type();
             }
 
+<<<<<<< HEAD
             // Pengecekan Keamanan (Client-side)
             function isCommandDangerous(command) {
                 const lowerCommand = command.toLowerCase().trim();
@@ -365,6 +679,16 @@
                     return 'Akses ke direktori sensitif di luar folder Anda diblokir.';
                 }
                 // Blokir modifikasi user
+=======
+            function isCommandDangerous(command) {
+                const lowerCommand = command.toLowerCase().trim();
+                if (/\b(rm\s+-r|rm\s+-f|rm\s+-fr|rm\s+-rf|rm|pkill|kill\s+-9|shutdown|reboot|format|dd|del\s+\/s\s+\/q)\b/i.test(lowerCommand)) {
+                    return 'Perintah yang berpotensi merusak sistem diblokir.';
+                }
+                if (/\b(cat|tail|grep|find|ls)\s+(\/|~\/|\/etc|\/var|\/root|\.\.)/i.test(lowerCommand) && !lowerCommand.includes(shellCurrentPathInput.value)) {
+                    return 'Akses ke direktori sensitif di luar folder Anda diblokir.';
+                }
+>>>>>>> c196310 (update tampilan)
                 if (/\b(usermod|useradd|passwd|groupadd|net\s+user|net\s+group)\b/i.test(lowerCommand)) {
                     return 'Perintah modifikasi user atau jaringan diblokir.';
                 }
@@ -376,12 +700,20 @@
                     e.preventDefault();
                     const command = terminalInput.value.trim();
                     if (command === '') return;
+<<<<<<< HEAD
 
                     terminalInput.disabled = true;
 
                     // Tampilkan perintah yang dimasukkan
                     const commandEcho = document.createElement('div');
                     commandEcho.innerHTML = `<span id="terminal-prompt"><%= user.username %>@server:<span style="color: #00bcd4;">${shellCurrentPathInput.value.replace(/\\/g, '/').split('/').pop()}</span>$></span> ${command}`;
+=======
+                    terminalInput.disabled = true;
+
+                    const commandEcho = document.createElement('div');
+                    const currentDir = shellCurrentPathInput.value.replace(/\\/g, '/').split('/').pop() || '~';
+                    commandEcho.innerHTML = `<span><span style="color: #4CAF50;"><%= user.username %>@server:</span><span style="color: #00bcd4;">${currentDir}</span>$&nbsp;</span> ${command}`;
+>>>>>>> c196310 (update tampilan)
                     terminalOutput.appendChild(commandEcho);
                     
                     terminalInput.value = '';
@@ -396,12 +728,16 @@
                         typewriterEffect(errorElement, `[BLOCKED]: ${securityError}`, () => {
                             terminalInput.disabled = false;
                             terminalInput.focus();
+<<<<<<< HEAD
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
+=======
+>>>>>>> c196310 (update tampilan)
                         });
                         return;
                     }
 
                     try {
+<<<<<<< HEAD
                         // Menggunakan endpoint /user/execute-command (sesuai backend yang diperbaiki)
                         const response = await fetch('/user/execute-command', { 
                             method: 'POST',
@@ -410,6 +746,12 @@
                                 command: command,
                                 currentPath: shellCurrentPathInput.value
                             })
+=======
+                        const response = await fetch('/user/execute-command', { 
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ command, currentPath: shellCurrentPathInput.value })
+>>>>>>> c196310 (update tampilan)
                         });
 
                         const data = await response.json();
@@ -418,6 +760,7 @@
                         
                         if (!response.ok) {
                             outputElement.style.color = '#dc3545';
+<<<<<<< HEAD
                             const errorMessage = `Error ${response.status}: ${data.output || data.message || 'Unknown Server Error'}`;
                             typewriterEffect(outputElement, errorMessage, () => {
                                 terminalInput.disabled = false;
@@ -430,12 +773,18 @@
                                 terminalInput.focus();
                                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
                             });
+=======
+                            typewriterEffect(outputElement, data.output || data.message || 'Unknown Server Error');
+                        } else {
+                            typewriterEffect(outputElement, data.output);
+>>>>>>> c196310 (update tampilan)
                         }
                         terminalOutput.appendChild(outputElement);
 
                     } catch (error) {
                         const errorElement = document.createElement('pre');
                         errorElement.style.color = '#dc3545';
+<<<<<<< HEAD
                         const clientError = `Client/Network Error: ${error.message}`;
                         typewriterEffect(errorElement, clientError, () => {
                            terminalInput.disabled = false;
@@ -443,6 +792,14 @@
                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
                         });
                         terminalOutput.appendChild(errorElement);
+=======
+                        typewriterEffect(errorElement, `Client/Network Error: ${error.message}`);
+                        terminalOutput.appendChild(errorElement);
+                    } finally {
+                        terminalInput.disabled = false;
+                        terminalInput.focus();
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+>>>>>>> c196310 (update tampilan)
                     }
                 });
             }
