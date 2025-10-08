@@ -229,17 +229,23 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">                  
                     <div id="terminal">
                         <span>Selamat datang di Web Shell. Perintah berbahaya diblokir otomatis.</span><br>
                         <span class="text-nowrap text-align-center">Lokasi kerja: <strong style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/') %></strong></span>
                     </div>
                     <form id="terminal-form">
                         <div id="terminal-input-container">
-                            <span id="terminal-prompt" class="pe-2"><%= user.username %>@server:<span style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/').split('/').pop() %></span>$></span>
+                            <span id="terminal-prompt" class="pe-2 text-nowrap"><%= user.username %>@server:<span style="color: #00bcd4;"><%= currentPath.replace(/\\/g, '/').split('/').pop() %></span>$></span>
                             <input type="text" id="terminal-input" autocomplete="off" autofocus>
                             <input type="hidden" id="shell-current-path" value="<%= currentPath %>">
                         </div>
                     </form>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
