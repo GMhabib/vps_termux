@@ -213,6 +213,12 @@
                         <h3><i class="fas fa-users"></i> User Management</h3>
                     </div>
                     <div class="card-body">
+   <div class="mb-3">
+                            <button type="button" id="delete-all-users-btn" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-user-slash"></i> Hapus Semua User
+                            </button>
+                            <p class="small text-muted mt-2">Ini akan menghapus semua user **kecuali** Anda sendiri.</p>
+                        </div>                     
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
@@ -465,6 +471,59 @@
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 });
             }
+            // --- LOGIKA MANAJEMEN USER ---
+
+document.getElementById('delete-all-users-btn').addEventListener('click', async () => {
+    // KONFIRMASI KETAT DENGAN INPUT TEKS
+    const confirmation = prompt("PERINGATAN! Anda akan menghapus SEMUA user (kecuali Anda sendiri).\n\nKetik 'HAPUS SEMUA' untuk melanjutkan:");
+
+    if (confirmation !== 'HAPUS SEMUA') {
+        if (confirmation !== null) {
+            showNotification('Penghapusan dibatalkan. Konfirmasi tidak cocok.', 'info');
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/delete-all-users', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Gagal menghapus semua user.');
+        }
+
+        // Tampilkan notifikasi sukses dan refresh halaman
+        showNotification(result.message, 'success');
+        
+        // Tunda refresh agar notifikasi sempat terlihat
+        setTimeout(() => {
+            window.location.reload(); 
+        }, 1500); 
+
+    } catch (error) {
+        showNotification(`Error: ${error.message}`, 'error');
+    }
+});
+
+// Pastikan semua form delete user individu juga memiliki konfirmasi:
+document.querySelectorAll('.delete-user-form').forEach(form => {
+    form.addEventListener('submit', function(e) { 
+        const userName = this.closest('tr').querySelector('td:first-child').textContent.trim();
+        // Cek jika tombol disable (artinya user sendiri)
+        if (this.querySelector('button[disabled]')) {
+            e.preventDefault();
+            return;
+        }
+        if (!confirm(`Yakin ingin menghapus user "${userName}"? Tindakan ini tidak dapat dibatalkan.`)) {
+            e.preventDefault(); 
+        }
+    });
+});
+
         });
     </script>
 </body>
