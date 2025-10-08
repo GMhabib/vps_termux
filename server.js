@@ -12,7 +12,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const MONGO_URI = 'mongodb://127.0.0.1:27017/auth_project';
+const MONGO_URI = "mongodb+srv://Vercel-Admin-auth_project:MNiTateIn80mCxh8@auth-project.jwccxdo.mongodb.net/?retryWrites=true&w=majority";
 
 let mongodProcess = null; // Tambahkan variabel untuk menyimpan proses mongod
 
