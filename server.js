@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
-// const { exec } = require('child_process'); // TIDAK DIGUNAKAN DI VERCEL
+const { exec } = require('child_process'); // TIDAK DIGUNAKAN DI VERCEL
 // const { exec } = require('child_process'); // TIDAK DIGUNAKAN DI VERCEL
 
 const authRoutes = require('./routes/auth');
